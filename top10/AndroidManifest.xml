@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.mathematica.pro"
+    android:versionCode="7"
+    android:versionName="1.5" >
+
+    <uses-sdk
+        android:minSdkVersion="11"
+        android:targetSdkVersion="16" />
+
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.NETWORK" />
+    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@android:style/Theme.Holo.Light" >
+        <!-- android:theme="@style/Theme.Default" -->
+        <activity
+            android:name="org.mathematica.pro.SplashScreen"
+            android:screenOrientation="portrait" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="org.mathematica.pro.MainMenu"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="org.mathematica.pro.GameScreen"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:theme="@android:style/Theme.Holo.Light"
+            android:name="org.mathematica.pro.UserProfileActivity"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="org.mathematica.pro.TutorialActivity"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="org.mathematica.pro.TutorialView"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="org.mathematica.pro.RankingListActivity"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="org.mathematica.pro.NewMainMenu"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="org.mathematica.pro.Testing"
+            android:label="@string/title_activity_testing" >
+        </activity>
+    </application>
+
+</manifest>
