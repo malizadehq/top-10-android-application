@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name" translatable="false">Top 10</string>
+    <string name="digit0" translatable="false">0</string>
+    <string name="digit1" translatable="false">1</string>
+    <string name="digit2" translatable="false">2</string>
+    <string name="digit3" translatable="false">3</string>
+    <string name="digit4" translatable="false">4</string>
+    <string name="digit5" translatable="false">5</string>
+    <string name="digit6" translatable="false">6</string>
+    <string name="digit7" translatable="false">7</string>
+    <string name="digit8" translatable="false">8</string>
+    <string name="digit9" translatable="false">9</string>
+    <string name="horizontal_questions" translatable="false">Horizontal question</string>
+    <string name="vertical_questions" translatable="false">Vertical question</string>
+    <string name="game_mode" translatable="false">Game mode</string>
+    <string name="level_layout" translatable="false">Level layout</string>
+    <string name="level_diff" translatable="false">Level difficulty</string>
+    <string name="play" translatable="false">PLAY!</string>
+    <string name="welcome_stranger" translatable="false">Welcome, Friend!</string>
+    <string name="easy" translatable="false">EASY</string>
+    <string name="medium" translatable="false">MEDIUM</string>
+    <string name="hard" translatable="false">HARD</string>
+    <string name="digits" translatable="false">DIGITS</string>
+    <string name="rows" translatable="false">ROWS</string>
+    <string name="columns" translatable="false">COLUMNS</string>
+    <string name="timed" translatable="false">TIMED</string>
+    <string name="normal" translatable="false">NORMAL</string>
+    <string name="splash_title" translatable="false">Mathematica</string>
+    <string name="splash_subtitle" translatable="false">PRO Edition</string>
+    <string name="close" translatable="false">Close</string>
+    <string name="points_label" translatable="false">POINTS</string>
+    <string name="contentDescription" translatable="false">Image used inside Mathematica PRO. All images are free to use!</string>
+    <string name="clear_notes" translatable="false">Clear Notes</string>
+    <string name="hint" translatable="false">Write down numbers here to free your mind!</string>
+    <string name="html_page" translatable="false">
+<![CDATA[
+<html>
+  <head>
+		<link href="http://fonts.googleapis.com/css?family=Enriqueta:400,700" rel="stylesheet" type="text/css">
+		<style type="text/css" media="screen">
+#horizon        
+	{
+	color: white;
+	text-align: center;
+	position: absolute;
+	top: 50%;
+	left: 0px;
+	width: 100%;
+	height: 1px;
+	overflow: visible;
+	visibility: visible;
+	display: block
+	}
+     * {
+			margin: 0;
+			padding: 0;
+      }
+      body {
+			margin-top: 50px;
+			background-color: #FAFAFA;
+      }
+      h1 {
+			color: #262626;
+			font-family: "Enriqueta", serif;
+			font-size: 50px;
+			line-height: 48px;
+			margin: 0 0 30px;
+      -webkit-text-stroke: 1px transparent;
+      }
+
+      .post-info {
+			color: #aaaaaa;
+			font-family: Georgia, serif;
+			font-size: 22px;
+			font-style: italic;
+			line-height: 0px;
+			padding: 10px 0;
+      }
+
+      .post-info a {
+			color: #c73036;
+			font-family: "Enriqueta", serif;
+			font-style: normal;
+			font-weight: bold;
+			text-decoration: none;
+			text-transform: uppercase;
+      }
+</style>
+</head>
+<body>
+		<div id="horizon">
+			<div id="content">
+					<h1>
+						<font color="#e0735d">T</font>
+						<font color="#e9c84f">O</font>
+						<font color="#9ac6ec">P</font>
+						<font color="#5cae5c">&nbsp;10</font>
+					</h1>
+          <p class="post-info">&quot;Sharpen you mind&quot;</p>
+				</div>
+			</div>
+		</div>		
+</body>
+</html>
+        ]]>
+    </string>
+    <string name="hello_world">Hello world!</string>
+    <string name="menu_settings">Settings</string>
+    <string name="title_activity_testing">Testing</string>
+
+</resources>
