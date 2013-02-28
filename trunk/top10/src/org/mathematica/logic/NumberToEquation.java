@@ -135,6 +135,14 @@ public class NumberToEquation {
 				operator = (char) 0x221A;
 			} else {
 				secondOperand = (int) ((Math.random() * result) + result);
+				/*
+				 * If secondOperand == result it will generate a reminder of 0
+				 * instead of result value. This will make sure it will not
+				 * happen
+				 */
+				while (secondOperand == result) {
+					secondOperand = (int) ((Math.random() * result) + result);
+				}
 				firstOperand = (int) ((Math.random() * 9) + 1) * secondOperand
 						+ result;
 				operator = '%';

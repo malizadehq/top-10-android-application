@@ -24,6 +24,7 @@ import org.mathematica.sound.SoundManager;
 import org.mathematica.structures.Level;
 
 import android.annotation.SuppressLint;
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -37,16 +38,16 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
 import android.view.animation.ScaleAnimation;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -65,10 +66,6 @@ public class GameScreen extends Activity implements OnClickListener,
 
 	private Toast toast;
 
-	private ImageButton showNotesButton;
-	private ImageButton backToMainMenuButton;
-
-	private TextView pointsLabel;
 	private int currentGamePoints = 0;
 
 	private int currentLevelRows = 0;
@@ -79,7 +76,6 @@ public class GameScreen extends Activity implements OnClickListener,
 	private int currentLevelGameMode;
 
 	private Timer timer;
-	private TextView remainingTimeLabel;
 	private int secondsLeft = 0;
 
 	private Toast activityToast = null;
@@ -87,26 +83,17 @@ public class GameScreen extends Activity implements OnClickListener,
 	private int availableLives;
 	private int livesLeft;
 
+	ActionBar actionBar = null;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.activity_game_screen);
 
 		horQuestion = (TextView) findViewById(R.id.hor_question);
 		vertQuestion = (TextView) findViewById(R.id.vert_question);
-
-		showNotesButton = (ImageButton) findViewById(R.id.show_notes_button);
-		showNotesButton.setOnClickListener(this);
-		showNotesButton.setOnLongClickListener(this);
-		backToMainMenuButton = (ImageButton) findViewById(R.id.exit_game_button);
-		backToMainMenuButton.setOnClickListener(this);
-		backToMainMenuButton.setOnLongClickListener(this);
-
-		remainingTimeLabel = (TextView) findViewById(R.id.time_label);
-		pointsLabel = (TextView) findViewById(R.id.game_points_label);
 
 		Bundle extras = getIntent().getExtras();
 		Level levelInformations = (Level) extras.getSerializable("ITEM");
@@ -145,6 +132,8 @@ public class GameScreen extends Activity implements OnClickListener,
 		setUpQuestions(currentLevelDifficulty);
 		refreshGameTilesBackground();
 
+		actionBar = getActionBar();
+
 		secondsLeft = calculateGameTime();
 		new LoadUI().execute();
 
@@ -153,14 +142,24 @@ public class GameScreen extends Activity implements OnClickListener,
 			timer = new Timer();
 			timer.execute();
 		} else {
-			remainingTimeLabel.setText("--:--");
-			pointsLabel.setText("Free play");
+			actionBar.setSubtitle("--:--");
 		}
 
 		if (newGame) {
 			showHints();
 		}
 		AppData.oldMessage = "";
+
+		actionBar.setSubtitle("Time remaining: 03:17");
+		actionBar.setTitle("EASY");
+		actionBar.setDisplayHomeAsUpEnabled(true);
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.game_screen_action_bar, menu);
+		return true;
 	}
 
 	private class LoadUI extends AsyncTask<String, Void, String> {
@@ -237,14 +236,14 @@ public class GameScreen extends Activity implements OnClickListener,
 								.setVisibility(View.VISIBLE);
 					}
 
-					pointsLabel.setText("0 xp");
+					// pointsLabel.setText("0 xp");
 
 					if (!newGame) {
 						secondsLeft = SavedGameData
 								.getSavedInt(SavedGameData.SAVED_TIME);
 						currentGamePoints = SavedGameData
 								.getSavedInt(SavedGameData.SAVED_XP);
-						pointsLabel.setText("" + currentGamePoints + " xp");
+						// pointsLabel.setText("" + currentGamePoints + " xp");
 						combo = SavedGameData
 								.getSavedInt(SavedGameData.SAVED_COMBO);
 
@@ -376,28 +375,29 @@ public class GameScreen extends Activity implements OnClickListener,
 	}
 
 	private void updateTime() {
-		remainingTimeLabel.setText(formatSeconds(secondsLeft));
+		// remainingTimeLabel.setText(formatSeconds(secondsLeft));
+		actionBar.setSubtitle("Time remaining: " + formatSeconds(secondsLeft));
 
 		if (secondsLeft == 90) {
-			remainingTimeLabel.setTextColor(Color.parseColor("#FF6600"));
+			// remainingTimeLabel.setTextColor(Color.parseColor("#FF6600"));
 			showCustomMessageOnScreen("Hurry up!", Toast.LENGTH_LONG,
 					Color.parseColor("#FF6600"));
 			return;
 		}
 
 		if (secondsLeft < 90) {
-			remainingTimeLabel.setTextColor(Color.parseColor("#FF6600"));
+			// remainingTimeLabel.setTextColor(Color.parseColor("#FF6600"));
 		}
 
 		if (secondsLeft == 30) {
-			remainingTimeLabel.setTextColor(Color.parseColor("#700e0e"));
+			// remainingTimeLabel.setTextColor(Color.parseColor("#700e0e"));
 			showCustomMessageOnScreen("Final push!", Toast.LENGTH_LONG,
 					Color.parseColor("#700e0e"));
 			return;
 		}
 
 		if (secondsLeft < 30) {
-			remainingTimeLabel.setTextColor(Color.parseColor("#700e0e"));
+			// remainingTimeLabel.setTextColor(Color.parseColor("#700e0e"));
 		}
 
 		if (secondsLeft == 0) {
@@ -689,24 +689,25 @@ public class GameScreen extends Activity implements OnClickListener,
 
 	public void onClick(View v) {
 
-		if (v == showNotesButton) {
-			Dialog dialog = null;
-			final CustomNotesDialog.Builder customBuilder = new CustomNotesDialog.Builder(
-					GameScreen.this);
-			dialog = customBuilder.create();
-			dialog.show();
-			return;
-		}
-
-		if (v == backToMainMenuButton) {
-			timer.cancel(true);
-			saveCurrentLevelDetails();
-			Intent intent = new Intent(GameScreen.this, NewMainMenu.class);
-			intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-			startActivity(intent);
-			overridePendingTransition(R.anim.slide_bottom_up_animation,
-					R.anim.stay_put);
-		}
+		// if (v == showNotesButton) {
+		// Dialog dialog = null;
+		// final CustomNotesDialog.Builder customBuilder = new
+		// CustomNotesDialog.Builder(
+		// GameScreen.this);
+		// dialog = customBuilder.create();
+		// dialog.show();
+		// return;
+		// }
+		//
+		// if (v == backToMainMenuButton) {
+		// timer.cancel(true);
+		// saveCurrentLevelDetails();
+		// Intent intent = new Intent(GameScreen.this, NewMainMenu.class);
+		// intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		// startActivity(intent);
+		// overridePendingTransition(R.anim.slide_bottom_up_animation,
+		// R.anim.stay_put);
+		// }
 
 		refreshGameTilesBackground();
 		for (int i = 0; i < tiles.size(); i++) {
@@ -945,16 +946,6 @@ public class GameScreen extends Activity implements OnClickListener,
 
 	public boolean onLongClick(View v) {
 
-		if (v == backToMainMenuButton) {
-			showToast("Back to main menu!", Toast.LENGTH_SHORT);
-			return false;
-		}
-
-		if (v == showNotesButton) {
-			showToast("Show notes board", Toast.LENGTH_SHORT);
-			return false;
-		}
-
 		for (int i = 0; i < tiles.size(); i++) {
 			if (v == tiles.get(i)) {
 				final Button current = tiles.get(i);
@@ -1039,7 +1030,7 @@ public class GameScreen extends Activity implements OnClickListener,
 			return;
 		}
 		currentGamePoints += pointsToAdd;
-		pointsLabel.setText("" + currentGamePoints + " xp");
+		// pointsLabel.setText("" + currentGamePoints + " xp");
 
 		String message = "";
 		if (currentGamePoints >= 5000) {

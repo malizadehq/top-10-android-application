@@ -11,17 +11,20 @@ import org.mathematica.logic.CheckInternet;
 import org.mathematica.rankings.RankingWrapper;
 import org.mathematica.structures.RankedUser;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
@@ -40,10 +43,13 @@ public class RankingListActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.activity_rankings);
+
+		ActionBar actionBar = getActionBar();
+		actionBar.setTitle("Top 10");
+		actionBar.setDisplayHomeAsUpEnabled(true);
 
 		_routesListView = (ListView) findViewById(R.id.shop_items_list);
 		_routesListView.setDivider(null);
@@ -52,6 +58,13 @@ public class RankingListActivity extends Activity {
 				"Searching around the world...");
 		loadingDialog.show();
 		new UpdateScoreOnServer().execute();
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.help_action_bar, menu);
+		return true;
 	}
 
 	class UpdateScoreOnServer extends AsyncTask<String, int[], String> {

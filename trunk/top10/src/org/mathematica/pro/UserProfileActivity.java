@@ -19,7 +19,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.NavUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -28,6 +27,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -57,9 +57,8 @@ public class UserProfileActivity extends Activity implements OnClickListener,
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		// requestWindowFeature(Window.FEATURE_NO_TITLE);
-		// getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-		// WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.activity_user_profile);
 
 		new DisplayLargeUserProfile().execute();
@@ -103,7 +102,8 @@ public class UserProfileActivity extends Activity implements OnClickListener,
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case android.R.id.home:
-			Intent intent = new Intent(UserProfileActivity.this, NewMainMenu.class);
+			Intent intent = new Intent(UserProfileActivity.this,
+					NewMainMenu.class);
 			intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(intent);
 			overridePendingTransition(R.anim.slide_top_to_bottom_animation,
@@ -122,7 +122,7 @@ public class UserProfileActivity extends Activity implements OnClickListener,
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.activity_testing, menu);
+		inflater.inflate(R.menu.user_profile_action_bar, menu);
 		return true;
 	}
 
