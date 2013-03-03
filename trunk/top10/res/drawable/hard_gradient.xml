@@ -3,9 +3,9 @@
 
     <gradient
         android:angle="0"
-        android:centerColor="#dc8e75"
+        android:centerColor="@color/red"
         android:endColor="#dc8e75"
-        android:startColor="#e0735d" />
+        android:startColor="@color/red" />
 
     <stroke
         android:width="2dip"

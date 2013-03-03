@@ -18,7 +18,7 @@
                 android:layout_height="65dip"
                 android:layout_margin="1dip"
                 android:layout_weight="1"
-                android:background="@drawable/dial"
+                android:background="@drawable/tile_normal_shade"
                 android:text="@string/digit1"
                 android:textSize="30sp" />
 
@@ -28,7 +28,7 @@
                 android:layout_height="fill_parent"
                 android:layout_margin="1dip"
                 android:layout_weight="1"
-                android:background="@drawable/dial"
+                android:background="@drawable/tile_normal_shade"
                 android:text="@string/digit2"
                 android:textSize="30sp" />
 
@@ -38,7 +38,7 @@
                 android:layout_height="fill_parent"
                 android:layout_margin="1dip"
                 android:layout_weight="1"
-                android:background="@drawable/dial"
+                android:background="@drawable/tile_normal_shade"
                 android:text="@string/digit3"
                 android:textSize="30sp" />
         </TableRow>
@@ -51,7 +51,7 @@
                 android:layout_height="65dip"
                 android:layout_margin="1dip"
                 android:layout_weight="1"
-                android:background="@drawable/dial"
+                android:background="@drawable/tile_normal_shade"
                 android:text="@string/digit4"
                 android:textSize="30sp" />
 
@@ -61,7 +61,7 @@
                 android:layout_height="fill_parent"
                 android:layout_margin="1dip"
                 android:layout_weight="1"
-                android:background="@drawable/dial"
+                android:background="@drawable/tile_normal_shade"
                 android:text="@string/digit5"
                 android:textSize="30sp" />
 
@@ -71,7 +71,7 @@
                 android:layout_height="fill_parent"
                 android:layout_margin="1dip"
                 android:layout_weight="1"
-                android:background="@drawable/dial"
+                android:background="@drawable/tile_normal_shade"
                 android:text="@string/digit6"
                 android:textSize="30sp" />
         </TableRow>
@@ -84,7 +84,7 @@
                 android:layout_height="65dip"
                 android:layout_margin="1dip"
                 android:layout_weight="1"
-                android:background="@drawable/dial"
+                android:background="@drawable/tile_normal_shade"
                 android:text="@string/digit7"
                 android:textSize="30sp" />
 
@@ -94,7 +94,7 @@
                 android:layout_height="fill_parent"
                 android:layout_margin="1dip"
                 android:layout_weight="1"
-                android:background="@drawable/dial"
+                android:background="@drawable/tile_normal_shade"
                 android:text="@string/digit8"
                 android:textSize="30sp" />
 
@@ -104,7 +104,7 @@
                 android:layout_height="fill_parent"
                 android:layout_margin="1dip"
                 android:layout_weight="1"
-                android:background="@drawable/dial"
+                android:background="@drawable/tile_normal_shade"
                 android:text="@string/digit9"
                 android:textSize="30sp" />
         </TableRow>
@@ -122,7 +122,7 @@
                 android:layout_height="65dip"
                 android:layout_margin="1dip"
                 android:layout_weight="1"
-                android:background="@drawable/dial"
+                android:background="@drawable/tile_normal_shade"
                 android:text="@string/digit0"
                 android:textSize="30sp" />
 

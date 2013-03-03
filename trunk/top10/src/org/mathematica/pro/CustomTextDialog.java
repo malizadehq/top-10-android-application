@@ -85,16 +85,16 @@ public class CustomTextDialog extends Dialog {
 			n8 = (Button) layout.findViewById(R.id.n8);
 			n9 = (Button) layout.findViewById(R.id.n9);
 
-			n0.setTypeface(myTypeface);
-			n1.setTypeface(myTypeface);
-			n2.setTypeface(myTypeface);
-			n3.setTypeface(myTypeface);
-			n4.setTypeface(myTypeface);
-			n5.setTypeface(myTypeface);
-			n6.setTypeface(myTypeface);
-			n7.setTypeface(myTypeface);
-			n8.setTypeface(myTypeface);
-			n9.setTypeface(myTypeface);
+//			n0.setTypeface(myTypeface);
+//			n1.setTypeface(myTypeface);
+//			n2.setTypeface(myTypeface);
+//			n3.setTypeface(myTypeface);
+//			n4.setTypeface(myTypeface);
+//			n5.setTypeface(myTypeface);
+//			n6.setTypeface(myTypeface);
+//			n7.setTypeface(myTypeface);
+//			n8.setTypeface(myTypeface);
+//			n9.setTypeface(myTypeface);
 
 			n0.setOnClickListener(new View.OnClickListener() {
 				public void onClick(View v) {

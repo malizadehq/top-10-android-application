@@ -36,10 +36,10 @@ import android.graphics.drawable.LayerDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
@@ -77,6 +77,7 @@ public class GameScreen extends Activity implements OnClickListener,
 
 	private Timer timer;
 	private int secondsLeft = 0;
+	private int totalGameTime = 0;
 
 	private Toast activityToast = null;
 	private int previousSelectedTileIndex = 0;
@@ -84,6 +85,8 @@ public class GameScreen extends Activity implements OnClickListener,
 	private int livesLeft;
 
 	ActionBar actionBar = null;
+	MenuItem remainingTimeAction = null;
+	TextView statusMessage = null;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -135,14 +138,13 @@ public class GameScreen extends Activity implements OnClickListener,
 		actionBar = getActionBar();
 
 		secondsLeft = calculateGameTime();
+		totalGameTime = secondsLeft;
 		new LoadUI().execute();
 
 		timer = new Timer();
 		if (currentLevelGameMode == 0) {
 			timer = new Timer();
 			timer.execute();
-		} else {
-			actionBar.setSubtitle("--:--");
 		}
 
 		if (newGame) {
@@ -150,15 +152,63 @@ public class GameScreen extends Activity implements OnClickListener,
 		}
 		AppData.oldMessage = "";
 
-		actionBar.setSubtitle("Time remaining: 03:17");
-		actionBar.setTitle("EASY");
+		switch (currentLevelDifficulty) {
+		case 0:
+			actionBar.setTitle("EASY");
+			break;
+		case 1:
+			actionBar.setTitle("MEDIUM");
+			break;
+		case 2:
+			actionBar.setTitle("HARD");
+			break;
+		}
 		actionBar.setDisplayHomeAsUpEnabled(true);
+
+		statusMessage = ((TextView) findViewById(R.id.game_info_screen));
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		timer.cancel(true);
+		saveCurrentLevelDetails();
+		finish();
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case android.R.id.home:
+			timer.cancel(true);
+			saveCurrentLevelDetails();
+			Intent intent = new Intent(GameScreen.this, NewMainMenu.class);
+			intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			startActivity(intent);
+			overridePendingTransition(R.anim.slide_bottom_up_animation,
+					R.anim.stay_put);
+			return true;
+		case R.id.show_notes_board:
+			Dialog dialog = null;
+			final CustomNotesDialog.Builder customBuilder = new CustomNotesDialog.Builder(
+					GameScreen.this);
+			dialog = customBuilder.create();
+			dialog.show();
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
 	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.game_screen_action_bar, menu);
+		remainingTimeAction = (MenuItem) menu.findItem(R.id.remaining_time);
+
+		if (currentLevelGameMode == 1) {
+			remainingTimeAction.setTitle("Unlimited time");
+		}
 		return true;
 	}
 
@@ -171,7 +221,7 @@ public class GameScreen extends Activity implements OnClickListener,
 
 					for (Button s : tiles) {
 						s.setTextSize(25);
-						s.setTypeface(AppData.quicksandFont);
+						// s.setTypeface(AppData.quicksandFont);
 					}
 
 					for (int i = 0; i < AppData.ROWS; i++) {
@@ -236,14 +286,12 @@ public class GameScreen extends Activity implements OnClickListener,
 								.setVisibility(View.VISIBLE);
 					}
 
-					// pointsLabel.setText("0 xp");
-
 					if (!newGame) {
 						secondsLeft = SavedGameData
 								.getSavedInt(SavedGameData.SAVED_TIME);
+						totalGameTime = secondsLeft;
 						currentGamePoints = SavedGameData
 								.getSavedInt(SavedGameData.SAVED_XP);
-						// pointsLabel.setText("" + currentGamePoints + " xp");
 						combo = SavedGameData
 								.getSavedInt(SavedGameData.SAVED_COMBO);
 
@@ -375,29 +423,24 @@ public class GameScreen extends Activity implements OnClickListener,
 	}
 
 	private void updateTime() {
-		// remainingTimeLabel.setText(formatSeconds(secondsLeft));
-		actionBar.setSubtitle("Time remaining: " + formatSeconds(secondsLeft));
+		remainingTimeAction.setTitle(formatSeconds(secondsLeft));
 
-		if (secondsLeft == 90) {
-			// remainingTimeLabel.setTextColor(Color.parseColor("#FF6600"));
-			showCustomMessageOnScreen("Hurry up!", Toast.LENGTH_LONG,
-					Color.parseColor("#FF6600"));
+		if (secondsLeft == (int) (totalGameTime * 0.75)) {
+			showCustomMessageOnScreen("Don't forget the time!",
+					Toast.LENGTH_LONG, Color.parseColor("#509DA0"));
 			return;
 		}
 
-		if (secondsLeft < 90) {
-			// remainingTimeLabel.setTextColor(Color.parseColor("#FF6600"));
-		}
-
-		if (secondsLeft == 30) {
-			// remainingTimeLabel.setTextColor(Color.parseColor("#700e0e"));
-			showCustomMessageOnScreen("Final push!", Toast.LENGTH_LONG,
-					Color.parseColor("#700e0e"));
+		if (secondsLeft == (int) (totalGameTime * 0.5)) {
+			showCustomMessageOnScreen("Half way there!", Toast.LENGTH_LONG,
+					Color.parseColor("#509DA0"));
 			return;
 		}
 
-		if (secondsLeft < 30) {
-			// remainingTimeLabel.setTextColor(Color.parseColor("#700e0e"));
+		if (secondsLeft == (int) (totalGameTime * 0.25)) {
+			showCustomMessageOnScreen("Watch the time!", Toast.LENGTH_LONG,
+					Color.parseColor("#509DA0"));
+			return;
 		}
 
 		if (secondsLeft == 0) {
@@ -516,42 +559,16 @@ public class GameScreen extends Activity implements OnClickListener,
 
 	private void showCustomMessageOnScreen(final String message,
 			final int duration, final int color) {
-		Handler mMusicHandler = new Handler() {
-		};
 
-		Runnable mMusicRunnable = new Runnable() {
+		statusMessage.setTextColor(color);
+		statusMessage.setText(message);
+
+		Handler handler = new Handler();
+		handler.postDelayed(new Runnable() {
 			public void run() {
-				LayoutInflater inflater = getLayoutInflater();
-				View layout = inflater.inflate(R.layout.custom_toast,
-						(ViewGroup) findViewById(R.id.toast_layout_root));
-
-				TextView text = (TextView) layout.findViewById(R.id.text);
-				text.setTypeface(AppData.joystickFont);
-				text.setText(message);
-
-				if (color == 0) {
-					text.setTextColor(Color.parseColor("#00FFFF"));
-				} else
-					text.setTextColor(color);
-
-				if (toast != null) {
-					toast.cancel();
-				}
-				toast = new Toast(getApplicationContext());
-				toast.setGravity(Gravity.CENTER_VERTICAL, 0, 0);
-				toast.setDuration(duration);
-				toast.setView(layout);
-				toast.show();
-
-				Handler handler = new Handler();
-				handler.postDelayed(new Runnable() {
-					public void run() {
-						toast.cancel();
-					}
-				}, 500);
+				statusMessage.setText("");
 			}
-		};
-		mMusicHandler.post(mMusicRunnable);
+		}, 2500);
 	}
 
 	private void drawQuestionTiles() {
@@ -767,142 +784,61 @@ public class GameScreen extends Activity implements OnClickListener,
 	}
 
 	private void paintTile(Button tile, TILE_TYPE type) {
-		Resources r = getResources();
-		Drawable[] layers = new Drawable[3];
-
 		if (VisualThemeManager.getCurrentTheme().equals("THEME1")) {
 			switch (type) {
 			case NORMAL:
-				layers[0] = r.getDrawable(R.drawable.white_paper);
-				layers[1] = r.getDrawable(R.drawable.tile_with_question);
-				layers[2] = r.getDrawable(R.drawable.tile_with_question);
+				tile.setBackgroundResource(R.drawable.tile_normal_shade);
 				break;
 			case WITH_QUESTIONS:
-				layers[0] = r.getDrawable(R.drawable.white_paper);
+				Resources r = getResources();
+				Drawable[] layers = new Drawable[2];
+				LayerDrawable layerDrawable = null;
+				layers[0] = r.getDrawable(R.drawable.tile_normal_shade);
 				layers[1] = r.getDrawable(R.drawable.question_mark_layer);
-				layers[2] = r.getDrawable(R.drawable.tile_with_question);
+				layerDrawable = new LayerDrawable(layers);
+				tile.setBackgroundDrawable(layerDrawable);
 				break;
 			case BLOCKED:
-				layers[0] = r.getDrawable(R.drawable.brown_paper);
-				layers[1] = r.getDrawable(R.drawable.tile_with_question);
-				layers[2] = r.getDrawable(R.drawable.tile_with_question);
+				tile.setBackgroundResource(R.drawable.tile_blocked_shade);
 				break;
 			case SELECTED:
-				layers[0] = r.getDrawable(R.drawable.selected_paper);
-				layers[1] = r.getDrawable(R.drawable.tile_selected);
-				layers[2] = r.getDrawable(R.drawable.tile_selected);
-				break;
-			case HIGHLIGHTED:
-				layers[0] = r.getDrawable(R.drawable.highlight_paper);
-				layers[1] = r.getDrawable(R.drawable.tile_marked);
-				layers[2] = r.getDrawable(R.drawable.tile_marked);
-				break;
-			}
-		}
-		if (VisualThemeManager.getCurrentTheme().equals("THEME2")) {
-			switch (type) {
-			case NORMAL:
-				layers[0] = r.getDrawable(R.drawable.bb_normal);
-				layers[1] = r.getDrawable(R.drawable.tile_marked);
-				layers[2] = r.getDrawable(R.drawable.tile_marked);
-				break;
-			case WITH_QUESTIONS:
-				layers[0] = r.getDrawable(R.drawable.bb_normal);
-				layers[1] = r.getDrawable(R.drawable.bb_question_layer);
-				layers[2] = r.getDrawable(R.drawable.tile_marked);
-				break;
-			case BLOCKED:
-				layers[0] = r.getDrawable(R.drawable.bb_blocked);
-				layers[1] = r.getDrawable(R.drawable.tile_marked);
-				layers[2] = r.getDrawable(R.drawable.tile_marked);
-				break;
-			case SELECTED:
-				layers[0] = r.getDrawable(R.drawable.bb_selected);
-				layers[1] = r.getDrawable(R.drawable.tile_marked);
-				layers[2] = r.getDrawable(R.drawable.tile_marked);
-				break;
-			case HIGHLIGHTED:
-				layers[0] = r.getDrawable(R.drawable.bb_high);
-				layers[1] = r.getDrawable(R.drawable.tile_marked);
-				layers[2] = r.getDrawable(R.drawable.tile_marked);
-				break;
-			}
-		}
-		if (VisualThemeManager.getCurrentTheme().equals("THEME3")) {
-			switch (type) {
-			case NORMAL:
-				layers[0] = r.getDrawable(R.drawable.highlight_paper);
-				layers[1] = r.getDrawable(R.drawable.tile_marked);
-				break;
-			case WITH_QUESTIONS:
-				layers[0] = r.getDrawable(R.drawable.highlight_paper);
-				layers[1] = r.getDrawable(R.drawable.tile_marked);
-				break;
-			case BLOCKED:
-				layers[0] = r.getDrawable(R.drawable.highlight_paper);
-				layers[1] = r.getDrawable(R.drawable.tile_marked);
-				break;
-			case SELECTED:
-				layers[0] = r.getDrawable(R.drawable.highlight_paper);
-				layers[1] = r.getDrawable(R.drawable.tile_marked);
-				break;
-			case HIGHLIGHTED:
-				layers[0] = r.getDrawable(R.drawable.highlight_paper);
-				layers[1] = r.getDrawable(R.drawable.tile_marked);
-				break;
-			}
-		}
-		if (VisualThemeManager.getCurrentTheme().equals("THEME4")) {
-			switch (type) {
-			case NORMAL:
-				layers[0] = r.getDrawable(R.drawable.highlight_paper);
-				layers[1] = r.getDrawable(R.drawable.tile_marked);
-				break;
-			case WITH_QUESTIONS:
-				layers[0] = r.getDrawable(R.drawable.highlight_paper);
-				layers[1] = r.getDrawable(R.drawable.tile_marked);
-				break;
-			case BLOCKED:
-				layers[0] = r.getDrawable(R.drawable.highlight_paper);
-				layers[1] = r.getDrawable(R.drawable.tile_marked);
-				break;
-			case SELECTED:
-				layers[0] = r.getDrawable(R.drawable.highlight_paper);
-				layers[1] = r.getDrawable(R.drawable.tile_marked);
-				break;
-			case HIGHLIGHTED:
-				layers[0] = r.getDrawable(R.drawable.highlight_paper);
-				layers[1] = r.getDrawable(R.drawable.tile_marked);
-				break;
-			}
-		}
-		if (VisualThemeManager.getCurrentTheme().equals("THEME5")) {
-			switch (type) {
-			case NORMAL:
-				layers[0] = r.getDrawable(R.drawable.highlight_paper);
-				layers[1] = r.getDrawable(R.drawable.tile_marked);
-				break;
-			case WITH_QUESTIONS:
-				layers[0] = r.getDrawable(R.drawable.highlight_paper);
-				layers[1] = r.getDrawable(R.drawable.tile_marked);
-				break;
-			case BLOCKED:
-				layers[0] = r.getDrawable(R.drawable.highlight_paper);
-				layers[1] = r.getDrawable(R.drawable.tile_marked);
-				break;
-			case SELECTED:
-				layers[0] = r.getDrawable(R.drawable.highlight_paper);
-				layers[1] = r.getDrawable(R.drawable.tile_marked);
-				break;
-			case HIGHLIGHTED:
-				layers[0] = r.getDrawable(R.drawable.highlight_paper);
-				layers[1] = r.getDrawable(R.drawable.tile_marked);
-				break;
-			}
-		}
+				if (currentLevelGameMode == 1) {
+					tile.setBackgroundResource(R.drawable.tile_unlimited_shade);
+					return;
+				}
 
-		LayerDrawable layerDrawable = new LayerDrawable(layers);
-		tile.setBackgroundDrawable(layerDrawable);
+				switch (currentLevelDifficulty) {
+				case 0:
+					tile.setBackgroundResource(R.drawable.tile_easy_shade);
+					break;
+				case 1:
+					tile.setBackgroundResource(R.drawable.tile_medium_shade);
+					break;
+				case 2:
+					tile.setBackgroundResource(R.drawable.tile_hard_shade);
+					break;
+				}
+				break;
+			case HIGHLIGHTED:
+				if (currentLevelGameMode == 1) {
+					tile.setBackgroundResource(R.drawable.tile_unlimited_highlight_shade);
+					return;
+				}
+
+				switch (currentLevelDifficulty) {
+				case 0:
+					tile.setBackgroundResource(R.drawable.tile_easy_highlight_shade);
+					break;
+				case 1:
+					tile.setBackgroundResource(R.drawable.tile_medium_highlight_shade);
+					break;
+				case 2:
+					tile.setBackgroundResource(R.drawable.tile_hard_highlight_shade);
+					break;
+				}
+				break;
+			}
+		}
 	}
 
 	private void updateQuestionSpanOnBoard(int row, int column) {
@@ -980,15 +916,17 @@ public class GameScreen extends Activity implements OnClickListener,
 	}
 
 	private void checkAnswer(int index, String value) {
-
-		if (currentLevelGameMode == 1) {
-			return;
-		}
-
 		int inserted = Integer.parseInt(value);
 		int pos[] = TransfUtils.getPositionFromIndex(index);
 		int desired = AppData.board[pos[0]][pos[1]];
 		if (inserted != desired) {
+
+			showCustomMessageOnScreen("WRONG!", Toast.LENGTH_SHORT, Color.GRAY);
+
+			if (currentLevelGameMode == 1) {
+				return;
+			}
+
 			livesLeft--;
 			if (livesLeft == 0) {
 				showCustomMessageOnScreen("Out of lives!", Toast.LENGTH_LONG, 0);
@@ -1002,6 +940,9 @@ public class GameScreen extends Activity implements OnClickListener,
 			} else {
 				showLivesLeft(livesLeft);
 			}
+		} else {
+			showCustomMessageOnScreen("CORRECT!", Toast.LENGTH_SHORT,
+					Color.GREEN);
 		}
 	}
 
@@ -1051,9 +992,22 @@ public class GameScreen extends Activity implements OnClickListener,
 			message = "WARM UP!";
 		}
 
+		int color = Color.BLACK;
+		switch (currentLevelDifficulty) {
+		case 0:
+			color = Color.parseColor("#9ac6ec");
+			break;
+		case 1:
+			color = Color.parseColor("#e9c84f");
+			break;
+		case 2:
+			color = Color.parseColor("#e0735d");
+			break;
+		}
+
 		if (message.length() > 0) {
 			if (!AppData.oldMessage.equals(message)) {
-				showCustomMessageOnScreen(message, Toast.LENGTH_SHORT, 0);
+				showCustomMessageOnScreen(message, Toast.LENGTH_SHORT, color);
 			}
 			AppData.oldMessage = message;
 		}
