@@ -10,16 +10,16 @@
         android:inputType="none"
         android:layout_width="fill_parent"
         android:layout_height="250dip"
-        android:layout_marginTop="150dip"
+        android:layout_marginTop="170dip"
         android:padding="3dip"
-        android:background="@drawable/dial"
+        android:background="@drawable/grey_button_selector"
         android:gravity="top|left" />
-
+    
     <Button
         android:id="@+id/clear_notes_button"
         android:layout_width="fill_parent"
         android:layout_height="80dip"
-        android:background="@drawable/dial"
+        android:background="@drawable/grey_button_selector"
         android:layout_below="@id/notes_board"
         android:text="@string/clear_notes" />
 

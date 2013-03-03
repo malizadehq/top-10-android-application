@@ -93,12 +93,12 @@
 		<div id="horizon">
 			<div id="content">
 					<h1>
-						<font color="#e0735d">T</font>
-						<font color="#e9c84f">O</font>
-						<font color="#9ac6ec">P</font>
-						<font color="#5cae5c">&nbsp;10</font>
+						<font color="#ff4444">T</font>
+						<font color="#ffbb33">O</font>
+						<font color="#33b5e5">P</font>
+						<font color="#99cc00">&nbsp;10</font>
 					</h1>
-          <p class="post-info">&quot;Sharpen you mind&quot;</p>
+          <p class="post-info">&#8220;Sharpen you mind&#8221;</p>
 				</div>
 			</div>
 		</div>		

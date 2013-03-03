@@ -16,7 +16,6 @@ import org.mathematica.structures.Level;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -68,7 +67,7 @@ public class NewMainMenu extends Activity implements OnClickListener {
 	private boolean hasLoadedSmallImage = false;
 	private boolean hasLoadedLargeImage = false;
 
-	private final Logger logger = new Logger(this.getClass().getName());
+	private static final Logger logger = new Logger("NewMainMenu");
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -187,32 +186,28 @@ public class NewMainMenu extends Activity implements OnClickListener {
 	}
 
 	private int[] getBameBoard() {
-		int rows = 4;
-		int columns = 4;
 		int digits = 2;
+		int limit = 4;
 
 		int game_board_size = 0;
 		if (smallRadioButton.isChecked()) {
 			game_board_size = 0;
 			digits = 2;
-			rows = ((int) (Math.random() * 2) + 4);
-			columns = ((int) (Math.random() * 2) + 4);
+			limit = 5;
 		} else if (mediumRadioButton.isChecked()) {
 			game_board_size = 1;
 			digits = ((int) (Math.random() * 2) + 2);
-			rows = ((int) (Math.random() * 3) + 5);
-			columns = ((int) (Math.random() * 2) + 5);
+			limit = 6;
 		} else {
 			game_board_size = 2;
 			digits = ((int) (Math.random() * 2) + 3);
-			rows = ((int) (Math.random() * 4) + 6);
-			columns = ((int) (Math.random() * 2) + 6);
+			limit = 7;
 		}
 
 		RetainedConfig.setConfigValue(RetainedConfig.BOARD_SIZE,
 				game_board_size);
 
-		return new int[] { rows, columns, digits };
+		return new int[] { limit, limit, digits };
 	}
 
 	private int getGameMode() {
@@ -443,18 +438,6 @@ public class NewMainMenu extends Activity implements OnClickListener {
 				public void onClick(DialogInterface dialog, int which) {
 					switch (which) {
 					case DialogInterface.BUTTON_POSITIVE:
-						Level level = new Level(0, 0, 0, 0, getGameMode());
-						Intent intent = new Intent(NewMainMenu.this,
-								GameScreen.class);
-						intent.putExtra("ITEM", level);
-						intent.putExtra("NEW_GAME", false);
-						startActivity(intent);
-						overridePendingTransition(
-								R.anim.slide_top_to_bottom_animation,
-								R.anim.stay_put1);
-						break;
-
-					case DialogInterface.BUTTON_NEGATIVE:
 						int[] settings = getBameBoard();
 						Level levelToContinue = new Level(settings[0],
 								settings[1], settings[2], gameDifficulty,
@@ -469,6 +452,18 @@ public class NewMainMenu extends Activity implements OnClickListener {
 								R.anim.slide_top_to_bottom_animation,
 								R.anim.stay_put1);
 						break;
+
+					case DialogInterface.BUTTON_NEGATIVE:
+						Level level = new Level(0, 0, 0, 0, getGameMode());
+						Intent intent = new Intent(NewMainMenu.this,
+								GameScreen.class);
+						intent.putExtra("ITEM", level);
+						intent.putExtra("NEW_GAME", false);
+						startActivity(intent);
+						overridePendingTransition(
+								R.anim.slide_top_to_bottom_animation,
+								R.anim.stay_put1);
+						break;
 					}
 				}
 			};
@@ -477,8 +472,8 @@ public class NewMainMenu extends Activity implements OnClickListener {
 			builder.setMessage(
 					"A previous unfinished game has been detected. Continue last game or start a new one?")
 					.setTitle("Unfinished game detected!")
-					.setPositiveButton("Continue last", dialogClickListener)
-					.setNegativeButton("Start new one", dialogClickListener)
+					.setNegativeButton("Continue last", dialogClickListener)
+					.setPositiveButton("Start new one", dialogClickListener)
 					.show();
 		} else {
 			int[] settings = getBameBoard();
