@@ -6,171 +6,22 @@
     android:gravity="center_horizontal"
     android:orientation="vertical" >
 
-    <RelativeLayout
+    <ListView
+        android:id="@+id/shop_items_list"
         android:layout_width="fill_parent"
-        android:layout_height="180dip" >
+        android:layout_height="fill_parent"
+        android:layout_weight="1"
+        android:cacheColorHint="#00000000"
+        android:listSelector="@android:color/transparent" />
 
-        <ImageView
-            android:id="@+id/large_user_profile_picture"
-            android:layout_width="fill_parent"
-            android:layout_height="180dip"
-            android:adjustViewBounds="false"
-            android:contentDescription="@string/contentDescription"
-            android:scaleType="centerCrop"
-            android:src="@drawable/default_profile_picture" />
-
-        <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="50dip"
-            android:layout_marginTop="100dip"
-            android:background="#6600FFFF"
-            android:gravity="center_vertical" >
-
-            <LinearLayout
-                android:layout_width="0dip"
-                android:layout_height="fill_parent"
-                android:layout_weight="1"
-                android:orientation="vertical" >
-
-                <TextView
-                    android:id="@+id/user_points_label"
-                    android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
-                    android:layout_marginLeft="10dip"
-                    android:layout_weight="1"
-                    android:gravity="center_vertical"
-                    android:textColor="#FFFFFF"
-                    android:textSize="20sp" />
-
-                <TextView
-                    android:id="@+id/total_user_points_label"
-                    android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
-                    android:layout_marginLeft="10dip"
-                    android:layout_weight="1"
-                    android:gravity="center_vertical"
-                    android:textColor="#FFFFFF"
-                    android:textSize="15sp" />
-            </LinearLayout>
-
-            <ImageButton
-                android:id="@+id/user_profile_collapser"
-                android:layout_width="70dip"
-                android:layout_height="50dip"
-                android:background="@drawable/settings_button_selector"
-                android:contentDescription="@string/contentDescription"
-                android:scaleType="center"
-                android:src="@drawable/expand_user_profile" />
-        </LinearLayout>
-    </RelativeLayout>
-
-    <LinearLayout
+    <!-- <LinearLayout
         android:layout_width="fill_parent"
-        android:layout_height="30dip"
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:visibility="gone" >
-
-        <ImageButton
-            android:layout_width="fill_parent"
-            android:layout_height="30dip"
-            android:layout_weight="1"
-            android:background="@drawable/settings_button_selector"
-            android:contentDescription="@string/contentDescription"
-            android:scaleType="centerInside"
-            android:src="@drawable/entered" />
-
-        <ImageButton
-            android:layout_width="fill_parent"
-            android:layout_height="30dip"
-            android:layout_weight="1"
-            android:background="@drawable/settings_button_selector"
-            android:contentDescription="@string/contentDescription"
-            android:scaleType="center"
-            android:src="@drawable/won" />
-
-        <ImageButton
-            android:layout_width="fill_parent"
-            android:layout_height="30dip"
-            android:layout_weight="1"
-            android:background="@drawable/settings_button_selector"
-            android:contentDescription="@string/contentDescription"
-            android:scaleType="center"
-            android:src="@drawable/lost" />
-
-        <ImageButton
-            android:layout_width="fill_parent"
-            android:layout_height="30dip"
-            android:layout_weight="1"
-            android:background="@drawable/settings_button_selector"
-            android:contentDescription="@string/contentDescription"
-            android:scaleType="center"
-            android:src="@drawable/avg_time" />
-
-        <ImageButton
-            android:layout_width="fill_parent"
-            android:layout_height="30dip"
-            android:layout_weight="1"
-            android:background="@drawable/settings_button_selector"
-            android:contentDescription="@string/contentDescription"
-            android:scaleType="center"
-            android:src="@drawable/most_points" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="20dip"
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:visibility="gone" >
-
-        <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="@string/digit0"
-            android:textColor="#700e0e"
-            android:textSize="16sp" />
-
-        <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="@string/digit0"
-            android:textColor="#700e0e"
-            android:textSize="16sp" />
-
-        <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="@string/digit0"
-            android:textColor="#700e0e"
-            android:textSize="16sp" />
-
-        <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="@string/digit0"
-            android:textColor="#700e0e"
-            android:textSize="16sp" />
-
-        <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="@string/digit0"
-            android:textColor="#700e0e"
-            android:textSize="16sp" />
-    </LinearLayout>
+        android:layout_height="1dip"
+        android:layout_marginLeft="15dip"
+        android:layout_marginRight="15dip"
+        android:layout_marginTop="2dip"
+        android:background="#BEBEBE"
+        android:orientation="horizontal" /> -->
 
     <LinearLayout
         android:layout_width="fill_parent"
@@ -231,8 +82,8 @@
             android:background="@drawable/settings_button_selector"
             android:contentDescription="@string/contentDescription"
             android:paddingBottom="9dip"
-            android:paddingLeft="19dip"
-            android:paddingRight="19dip"
+            android:paddingLeft="21dip"
+            android:paddingRight="21dip"
             android:paddingTop="9dip"
             android:scaleType="fitXY"
             android:src="@drawable/share" />
@@ -251,22 +102,5 @@
             android:src="@drawable/new_email"
             android:visibility="gone" />
     </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="1dip"
-        android:layout_marginLeft="15dip"
-        android:layout_marginRight="15dip"
-        android:layout_marginTop="2dip"
-        android:background="#BEBEBE"
-        android:orientation="horizontal" />
-
-    <ListView
-        android:id="@+id/shop_items_list"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:cacheColorHint="#00000000"
-        android:listSelector="@android:color/transparent"
-        android:textColor="#FFFFFF" />
 
 </LinearLayout>

@@ -62,17 +62,5 @@ public class BuyableItems {
 		items.add(new BuyableItem(
 				"One extra mistakes allowed during a timed game", 1, 25,
 				"_MISTAKE3", BUYABLE_TYPE.EXTRA_ALLOWED_MISTAKE));
-
-		/* Visual theme purchasable items */
-		items.add(new BuyableItem("Visual theme \"Default\"", 1, 0, "THEME1",
-				BUYABLE_TYPE.VISUAL_THEME));
-		items.add(new BuyableItem("Visual theme \"BlackBoard\"", 1, 100,
-				"THEME2", BUYABLE_TYPE.VISUAL_THEME));
-		// items.add(new BuyableItem("Visual theme \"Glow\"", 1, 0, "THEME3",
-		// BUYABLE_TYPE.VISUAL_THEME));
-		// items.add(new BuyableItem("Visual theme \"8 bits\"", 1, 0, "THEME4",
-		// BUYABLE_TYPE.VISUAL_THEME));
-		// items.add(new BuyableItem("Visual theme \"Runes\"", 1, 0, "THEME5",
-		// BUYABLE_TYPE.VISUAL_THEME));
 	}
 }
