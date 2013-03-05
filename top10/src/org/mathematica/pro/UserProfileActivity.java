@@ -7,7 +7,6 @@ import org.mathematica.globals.AppData;
 import org.mathematica.logic.CheckInternet;
 import org.mathematica.logic.CheckPurchase;
 import org.mathematica.logic.PointsManager;
-import org.mathematica.logic.VisualThemeManager;
 import org.mathematica.merchent.BuyableItem;
 import org.mathematica.merchent.BuyableItems;
 import org.mathematica.sound.SoundManager;
@@ -38,8 +37,6 @@ import android.widget.Toast;
 public class UserProfileActivity extends Activity implements OnClickListener,
 		OnLongClickListener {
 
-	ImageView collapseUserProfile;
-
 	private CustomMessagesAdapter _adaptor;
 	private ListView _routesListView;
 
@@ -49,10 +46,8 @@ public class UserProfileActivity extends Activity implements OnClickListener,
 	ImageButton shareContentButton;
 	ImageButton podiumOption;
 
-	Toast activityToast = null;
-
-	TextView userPointsLabel;
-	TextView totalUserPointsLabel;
+	private Toast activityToast = null;
+	private ActionBar actionBar = null;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -60,12 +55,6 @@ public class UserProfileActivity extends Activity implements OnClickListener,
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.activity_user_profile);
-
-		new DisplayLargeUserProfile().execute();
-
-		collapseUserProfile = (ImageView) findViewById(R.id.user_profile_collapser);
-		collapseUserProfile.setOnClickListener(this);
-		collapseUserProfile.setOnLongClickListener(this);
 
 		soundOption = (ImageButton) findViewById(R.id.sound_option);
 		helpOption = (ImageButton) findViewById(R.id.help_option);
@@ -87,15 +76,13 @@ public class UserProfileActivity extends Activity implements OnClickListener,
 		_routesListView.setDivider(null);
 		_routesListView.setDividerHeight(0);
 
-		userPointsLabel = (TextView) findViewById(R.id.user_points_label);
-		totalUserPointsLabel = (TextView) findViewById(R.id.total_user_points_label);
-
 		new LoadUi().execute();
 
-		ActionBar actionBar = getActionBar();
-		actionBar.setSubtitle("45 points available");
-		actionBar.setTitle("Tataru Alexandru Flavian");
+		actionBar = getActionBar();
+		actionBar.setTitle(AppData.username);
 		actionBar.setDisplayHomeAsUpEnabled(true);
+
+		setCurrentAvailablePoints(PointsManager.getPoints());
 	}
 
 	@Override
@@ -115,8 +102,8 @@ public class UserProfileActivity extends Activity implements OnClickListener,
 	}
 
 	private void setCurrentAvailablePoints(int points) {
-		userPointsLabel.setText("" + points + " point"
-				+ (points == 1 ? "" : "s") + " available");
+		actionBar.setSubtitle("" + points + " token" + (points == 1 ? "" : "s")
+				+ " available");
 	}
 
 	@Override
@@ -142,20 +129,6 @@ public class UserProfileActivity extends Activity implements OnClickListener,
 			} else {
 				soundOption.setImageResource(R.drawable.mute_state_action);
 			}
-			setCurrentAvailablePoints(PointsManager.getPoints());
-			totalUserPointsLabel.setText("out of "
-					+ PointsManager.getTotalPoints() + " total points earned");
-			return null;
-		}
-	}
-
-	private class DisplayLargeUserProfile extends
-			AsyncTask<String, Void, String> {
-
-		@Override
-		protected String doInBackground(String... params) {
-			((ImageView) findViewById(R.id.large_user_profile_picture))
-					.setImageBitmap(AppData.largeUserProfilePicture);
 			return null;
 		}
 	}
@@ -206,14 +179,6 @@ public class UserProfileActivity extends Activity implements OnClickListener,
 				if (item.type == BUYABLE_TYPE.TIPS_AND_TRICKS) {
 					((ImageView) v.findViewById(R.id.image))
 							.setImageResource(R.drawable.right_arrow);
-				} else if (item.type == BUYABLE_TYPE.VISUAL_THEME) {
-					if (item.key.equals(VisualThemeManager.getCurrentTheme())) {
-						((ImageView) v.findViewById(R.id.image))
-								.setImageResource(R.drawable.theme_selected);
-					} else {
-						((ImageView) v.findViewById(R.id.image))
-								.setImageResource(R.drawable.theme_unselected);
-					}
 				} else {
 					((ImageView) v.findViewById(R.id.image))
 							.setImageResource(R.drawable.purchased);
@@ -246,22 +211,6 @@ public class UserProfileActivity extends Activity implements OnClickListener,
 									overridePendingTransition(
 											R.anim.push_left_in,
 											R.anim.push_left_out);
-								} else if (BuyableItems.items.get(position).type == BUYABLE_TYPE.VISUAL_THEME) {
-									((ImageView) v.findViewById(R.id.image))
-											.setImageResource(R.drawable.theme_selected);
-									VisualThemeManager
-											.setCurrentTheme(BuyableItems.items
-													.get(position).key);
-									_adaptor = new CustomMessagesAdapter(
-											AppData.applicationContext,
-											R.layout.buyable_item,
-											new ArrayList<BuyableItem>());
-									_routesListView.setAdapter(_adaptor);
-
-									for (int i = 0; i < BuyableItems.items
-											.size(); i++)
-										_adaptor.add(BuyableItems.items.get(i));
-									_routesListView.setSelection(position);
 								} else {
 									showToast("Already purchased!",
 											Toast.LENGTH_SHORT);
@@ -280,23 +229,6 @@ public class UserProfileActivity extends Activity implements OnClickListener,
 									if (BuyableItems.items.get(position).type == BUYABLE_TYPE.TIPS_AND_TRICKS) {
 										((ImageView) v.findViewById(R.id.image))
 												.setImageResource(R.drawable.right_arrow);
-									} else if (BuyableItems.items.get(position).type == BUYABLE_TYPE.VISUAL_THEME) {
-										VisualThemeManager
-												.setCurrentTheme(BuyableItems.items
-														.get(position).key);
-										((ImageView) v.findViewById(R.id.image))
-												.setImageResource(R.drawable.theme_selected);
-										_adaptor = new CustomMessagesAdapter(
-												AppData.applicationContext,
-												R.layout.buyable_item,
-												new ArrayList<BuyableItem>());
-										_routesListView.setAdapter(_adaptor);
-
-										for (int i = 0; i < BuyableItems.items
-												.size(); i++)
-											_adaptor.add(BuyableItems.items
-													.get(i));
-										_routesListView.setSelection(position);
 									} else {
 										((ImageView) v.findViewById(R.id.image))
 												.setImageResource(R.drawable.purchased);
@@ -305,7 +237,7 @@ public class UserProfileActivity extends Activity implements OnClickListener,
 											.getPoints());
 									SoundManager.playSound(R.raw.purchase_made);
 								} else {
-									showToast("Need more points",
+									showToast("Need more tokens",
 											Toast.LENGTH_SHORT);
 								}
 							}
@@ -317,14 +249,6 @@ public class UserProfileActivity extends Activity implements OnClickListener,
 	}
 
 	public void onClick(View v) {
-		if (v == collapseUserProfile) {
-			Intent intent = new Intent(UserProfileActivity.this,
-					NewMainMenu.class);
-			intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-			startActivity(intent);
-			overridePendingTransition(R.anim.slide_top_to_bottom_animation,
-					R.anim.stay_put1);
-		}
 		if (v == helpOption) {
 			Intent intent = new Intent(UserProfileActivity.this,
 					TutorialActivity.class);
@@ -390,10 +314,6 @@ public class UserProfileActivity extends Activity implements OnClickListener,
 
 		if (v == soundOption) {
 			showToast("Mute/unmute sound in-game", Toast.LENGTH_SHORT);
-		}
-
-		if (v == collapseUserProfile) {
-			showToast("Collapse user profile", Toast.LENGTH_SHORT);
 		}
 
 		if (v == podiumOption) {

@@ -16,7 +16,6 @@ import org.mathematica.logic.Question;
 import org.mathematica.logic.QuestionsExtracter;
 import org.mathematica.logic.SavedGameData;
 import org.mathematica.logic.TransfUtils;
-import org.mathematica.logic.VisualThemeManager;
 import org.mathematica.merchent.BuyableItem;
 import org.mathematica.merchent.BuyableItems;
 import org.mathematica.rankings.RankingWrapper;
@@ -49,6 +48,7 @@ import android.view.animation.AnimationUtils;
 import android.view.animation.ScaleAnimation;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -88,12 +88,21 @@ public class GameScreen extends Activity implements OnClickListener,
 	MenuItem remainingTimeAction = null;
 	TextView statusMessage = null;
 
+	private ProgressBar progressBar = null;
+	private int totalAvailableTiles = 0;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.activity_game_screen);
+
+		actionBar = getActionBar();
+
+		progressBar = (ProgressBar) findViewById(R.id.progressBar);
+		progressBar.setProgress(0);
+		progressBar.setMax(100);
 
 		horQuestion = (TextView) findViewById(R.id.hor_question);
 		vertQuestion = (TextView) findViewById(R.id.vert_question);
@@ -135,10 +144,23 @@ public class GameScreen extends Activity implements OnClickListener,
 		setUpQuestions(currentLevelDifficulty);
 		refreshGameTilesBackground();
 
-		actionBar = getActionBar();
+		totalAvailableTiles = 0;
+		for (int i = 0; i < AppData.ROWS; i++) {
+			for (int j = 0; j < AppData.COLUMNS; j++) {
+				if (AppData.board[i][j] != -1) {
+					totalAvailableTiles++;
+				}
+			}
+		}
 
 		secondsLeft = calculateGameTime();
 		totalGameTime = secondsLeft;
+
+		if (newGame) {
+			showHints();
+		}
+		AppData.oldMessage = "";
+
 		new LoadUI().execute();
 
 		timer = new Timer();
@@ -147,30 +169,33 @@ public class GameScreen extends Activity implements OnClickListener,
 			timer.execute();
 		}
 
-		if (newGame) {
-			showHints();
-		}
-		AppData.oldMessage = "";
-
-		switch (currentLevelDifficulty) {
-		case 0:
-			actionBar.setTitle("EASY");
-			break;
-		case 1:
-			actionBar.setTitle("MEDIUM");
-			break;
-		case 2:
-			actionBar.setTitle("HARD");
-			break;
-		}
 		actionBar.setDisplayHomeAsUpEnabled(true);
 
 		statusMessage = ((TextView) findViewById(R.id.game_info_screen));
 	}
 
+	private void updateGameProgressBar(int filledInTiles) {
+		progressBar
+				.setProgress((int) ((filledInTiles * 100) / (int) totalAvailableTiles));
+	}
+
 	@Override
 	protected void onPause() {
 		super.onPause();
+
+		if (secondsLeft <= 0 && !SavedGameData.isGameInProgress()) {
+			return;
+		}
+
+		if (livesLeft == 0 && !SavedGameData.isGameInProgress()) {
+			return;
+		}
+
+		if (livesLeft != 0 && secondsLeft != 0
+				&& !SavedGameData.isGameInProgress()) {
+			return;
+		}
+
 		timer.cancel(true);
 		saveCurrentLevelDetails();
 		finish();
@@ -221,7 +246,6 @@ public class GameScreen extends Activity implements OnClickListener,
 
 					for (Button s : tiles) {
 						s.setTextSize(25);
-						// s.setTypeface(AppData.quicksandFont);
 					}
 
 					for (int i = 0; i < AppData.ROWS; i++) {
@@ -292,6 +316,12 @@ public class GameScreen extends Activity implements OnClickListener,
 						totalGameTime = secondsLeft;
 						currentGamePoints = SavedGameData
 								.getSavedInt(SavedGameData.SAVED_XP);
+						if (currentLevelGameMode == 0) {
+							actionBar.setTitle("" + currentGamePoints
+									+ " POINTS");
+						} else {
+							actionBar.setTitle("POINTLESS");
+						}
 						combo = SavedGameData
 								.getSavedInt(SavedGameData.SAVED_COMBO);
 
@@ -310,6 +340,29 @@ public class GameScreen extends Activity implements OnClickListener,
 									}
 								}
 							}
+						}
+						int correctTiles = 0;
+						for (int i = 0; i < currentLevelRows; i++) {
+							for (int j = 0; j < currentLevelColumns; j++) {
+								int index = TransfUtils.getIndexFromPosition(i,
+										j);
+								if (tiles.get(index).isEnabled()) {
+									try {
+										if (Integer.parseInt(tiles.get(index)
+												.getText().toString()) == AppData.board[i][j]) {
+											correctTiles++;
+										}
+									} catch (Exception e) {
+									}
+								}
+							}
+						}
+						updateGameProgressBar(correctTiles);
+					} else {
+						if (currentLevelGameMode == 0) {
+							actionBar.setTitle("0 POINTS");
+						} else {
+							actionBar.setTitle("POINTLESS");
 						}
 					}
 				}
@@ -425,21 +478,23 @@ public class GameScreen extends Activity implements OnClickListener,
 	private void updateTime() {
 		remainingTimeAction.setTitle(formatSeconds(secondsLeft));
 
+		int timeUpdatesTextColor = Color.parseColor("#33b5e5");
+
 		if (secondsLeft == (int) (totalGameTime * 0.75)) {
 			showCustomMessageOnScreen("Don't forget the time!",
-					Toast.LENGTH_LONG, Color.parseColor("#509DA0"));
+					Toast.LENGTH_LONG, timeUpdatesTextColor);
 			return;
 		}
 
 		if (secondsLeft == (int) (totalGameTime * 0.5)) {
 			showCustomMessageOnScreen("Half way there!", Toast.LENGTH_LONG,
-					Color.parseColor("#509DA0"));
+					timeUpdatesTextColor);
 			return;
 		}
 
 		if (secondsLeft == (int) (totalGameTime * 0.25)) {
 			showCustomMessageOnScreen("Watch the time!", Toast.LENGTH_LONG,
-					Color.parseColor("#509DA0"));
+					timeUpdatesTextColor);
 			return;
 		}
 
@@ -706,26 +761,6 @@ public class GameScreen extends Activity implements OnClickListener,
 
 	public void onClick(View v) {
 
-		// if (v == showNotesButton) {
-		// Dialog dialog = null;
-		// final CustomNotesDialog.Builder customBuilder = new
-		// CustomNotesDialog.Builder(
-		// GameScreen.this);
-		// dialog = customBuilder.create();
-		// dialog.show();
-		// return;
-		// }
-		//
-		// if (v == backToMainMenuButton) {
-		// timer.cancel(true);
-		// saveCurrentLevelDetails();
-		// Intent intent = new Intent(GameScreen.this, NewMainMenu.class);
-		// intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-		// startActivity(intent);
-		// overridePendingTransition(R.anim.slide_bottom_up_animation,
-		// R.anim.stay_put);
-		// }
-
 		refreshGameTilesBackground();
 		for (int i = 0; i < tiles.size(); i++) {
 			if (v == tiles.get(i)) {
@@ -784,64 +819,66 @@ public class GameScreen extends Activity implements OnClickListener,
 	}
 
 	private void paintTile(Button tile, TILE_TYPE type) {
-		if (VisualThemeManager.getCurrentTheme().equals("THEME1")) {
-			switch (type) {
-			case NORMAL:
-				tile.setBackgroundResource(R.drawable.tile_normal_shade);
-				break;
-			case WITH_QUESTIONS:
-				Resources r = getResources();
-				Drawable[] layers = new Drawable[2];
-				LayerDrawable layerDrawable = null;
-				layers[0] = r.getDrawable(R.drawable.tile_normal_shade);
-				layers[1] = r.getDrawable(R.drawable.question_mark_layer);
-				layerDrawable = new LayerDrawable(layers);
-				tile.setBackgroundDrawable(layerDrawable);
-				break;
-			case BLOCKED:
-				tile.setBackgroundResource(R.drawable.tile_blocked_shade);
-				break;
-			case SELECTED:
-				if (currentLevelGameMode == 1) {
-					tile.setBackgroundResource(R.drawable.tile_unlimited_shade);
-					return;
-				}
+		switch (type) {
+		case NORMAL:
+			tile.setBackgroundResource(R.drawable.tile_normal_shade);
+			break;
+		case WITH_QUESTIONS:
+			Resources r = getResources();
+			Drawable[] layers = new Drawable[2];
+			LayerDrawable layerDrawable = null;
+			layers[0] = r.getDrawable(R.drawable.tile_normal_shade);
+			layers[1] = r.getDrawable(R.drawable.question_mark_layer);
+			layerDrawable = new LayerDrawable(layers);
+			tile.setBackgroundDrawable(layerDrawable);
+			break;
+		case BLOCKED:
+			tile.setBackgroundResource(R.drawable.tile_blocked_shade);
+			break;
+		case SELECTED:
+			if (currentLevelGameMode == 1) {
+				tile.setBackgroundResource(R.drawable.tile_unlimited_shade);
+				return;
+			}
 
-				switch (currentLevelDifficulty) {
-				case 0:
-					tile.setBackgroundResource(R.drawable.tile_easy_shade);
-					break;
-				case 1:
-					tile.setBackgroundResource(R.drawable.tile_medium_shade);
-					break;
-				case 2:
-					tile.setBackgroundResource(R.drawable.tile_hard_shade);
-					break;
-				}
+			switch (currentLevelDifficulty) {
+			case 0:
+				tile.setBackgroundResource(R.drawable.tile_easy_shade);
 				break;
-			case HIGHLIGHTED:
-				if (currentLevelGameMode == 1) {
-					tile.setBackgroundResource(R.drawable.tile_unlimited_highlight_shade);
-					return;
-				}
-
-				switch (currentLevelDifficulty) {
-				case 0:
-					tile.setBackgroundResource(R.drawable.tile_easy_highlight_shade);
-					break;
-				case 1:
-					tile.setBackgroundResource(R.drawable.tile_medium_highlight_shade);
-					break;
-				case 2:
-					tile.setBackgroundResource(R.drawable.tile_hard_highlight_shade);
-					break;
-				}
+			case 1:
+				tile.setBackgroundResource(R.drawable.tile_medium_shade);
+				break;
+			case 2:
+				tile.setBackgroundResource(R.drawable.tile_hard_shade);
 				break;
 			}
+			break;
+		case HIGHLIGHTED:
+			if (currentLevelGameMode == 1) {
+				tile.setBackgroundResource(R.drawable.tile_unlimited_highlight_shade);
+				return;
+			}
+
+			switch (currentLevelDifficulty) {
+			case 0:
+				tile.setBackgroundResource(R.drawable.tile_easy_highlight_shade);
+				break;
+			case 1:
+				tile.setBackgroundResource(R.drawable.tile_medium_highlight_shade);
+				break;
+			case 2:
+				tile.setBackgroundResource(R.drawable.tile_hard_highlight_shade);
+				break;
+			}
+			break;
 		}
 	}
 
 	private void updateQuestionSpanOnBoard(int row, int column) {
+
+		ScaleAnimation ranim = (ScaleAnimation) AnimationUtils.loadAnimation(
+				AppData.applicationContext, R.anim.zoom);
+		ranim.setFillAfter(true);
 
 		for (Question elem : AppData.questions) {
 			if (elem.getRow() == row && elem.getColumn() == column) {
@@ -850,6 +887,8 @@ public class GameScreen extends Activity implements OnClickListener,
 						int index = TransfUtils.getIndexFromPosition(row, i);
 						if (tiles.get(index).isEnabled()) {
 							paintTile(tiles.get(index), TILE_TYPE.HIGHLIGHTED);
+							tiles.get(index).clearAnimation();
+							tiles.get(index).setAnimation(ranim);
 						} else {
 							break;
 						}
@@ -861,6 +900,8 @@ public class GameScreen extends Activity implements OnClickListener,
 						int index = TransfUtils.getIndexFromPosition(i, column);
 						if (tiles.get(index).isEnabled()) {
 							paintTile(tiles.get(index), TILE_TYPE.HIGHLIGHTED);
+							tiles.get(index).clearAnimation();
+							tiles.get(index).setAnimation(ranim);
 						} else {
 							break;
 						}
@@ -905,6 +946,7 @@ public class GameScreen extends Activity implements OnClickListener,
 								}
 								previousSelectedTileIndex = currentIndex;
 								checkGameProgress();
+
 								dialog.dismiss();
 							}
 						}).setTypeFace(AppData.quicksandFont);
@@ -921,7 +963,8 @@ public class GameScreen extends Activity implements OnClickListener,
 		int desired = AppData.board[pos[0]][pos[1]];
 		if (inserted != desired) {
 
-			showCustomMessageOnScreen("WRONG!", Toast.LENGTH_SHORT, Color.GRAY);
+			showCustomMessageOnScreen("WRONG!", Toast.LENGTH_SHORT,
+					Color.parseColor("#ff4444"));
 
 			if (currentLevelGameMode == 1) {
 				return;
@@ -942,7 +985,7 @@ public class GameScreen extends Activity implements OnClickListener,
 			}
 		} else {
 			showCustomMessageOnScreen("CORRECT!", Toast.LENGTH_SHORT,
-					Color.GREEN);
+					Color.parseColor("#99cc00"));
 		}
 	}
 
@@ -971,7 +1014,7 @@ public class GameScreen extends Activity implements OnClickListener,
 			return;
 		}
 		currentGamePoints += pointsToAdd;
-		// pointsLabel.setText("" + currentGamePoints + " xp");
+		actionBar.setTitle("" + currentGamePoints + " POINTS");
 
 		String message = "";
 		if (currentGamePoints >= 5000) {
@@ -989,21 +1032,10 @@ public class GameScreen extends Activity implements OnClickListener,
 		} else if (currentGamePoints >= 50) {
 			message = "GOOD!";
 		} else if (currentGamePoints >= 10) {
-			message = "WARM UP!";
+			message = "WARMING UP!";
 		}
 
-		int color = Color.BLACK;
-		switch (currentLevelDifficulty) {
-		case 0:
-			color = Color.parseColor("#9ac6ec");
-			break;
-		case 1:
-			color = Color.parseColor("#e9c84f");
-			break;
-		case 2:
-			color = Color.parseColor("#e0735d");
-			break;
-		}
+		int color = Color.parseColor("#509DA0");
 
 		if (message.length() > 0) {
 			if (!AppData.oldMessage.equals(message)) {
@@ -1028,6 +1060,23 @@ public class GameScreen extends Activity implements OnClickListener,
 			}
 		}
 
+		int correctTiles = 0;
+		for (int i = 0; i < currentLevelRows; i++) {
+			for (int j = 0; j < currentLevelColumns; j++) {
+				int index = TransfUtils.getIndexFromPosition(i, j);
+				if (tiles.get(index).isEnabled()) {
+					try {
+						if (Integer.parseInt(tiles.get(index).getText()
+								.toString()) == AppData.board[i][j]) {
+							correctTiles++;
+						}
+					} catch (Exception e) {
+					}
+				}
+			}
+		}
+		updateGameProgressBar(correctTiles);
+
 		if (allTilesFilledOut) {
 			/*
 			 * Check is tiles have been filled out all-right If YES then finish
@@ -1046,6 +1095,8 @@ public class GameScreen extends Activity implements OnClickListener,
 									R.drawable.tile_with_wrong_answer);
 							gameFinished = false;
 							mistakes++;
+						} else {
+							correctTiles++;
 						}
 					}
 				}
@@ -1056,8 +1107,8 @@ public class GameScreen extends Activity implements OnClickListener,
 
 				int earnedPoints = currentGamePoints / XP_TO_POINTS_RATIO;
 				String earnedPointsMessage = "";
-				earnedPointsMessage = earnedPoints == 0 ? "No points earned!"
-						: earnedPoints + " point(s) earned";
+				earnedPointsMessage = earnedPoints == 0 ? "No tokens earned!"
+						: earnedPoints + " token(s) earned";
 				Toast.makeText(this, earnedPointsMessage, Toast.LENGTH_SHORT)
 						.show();
 				PointsManager.addPoints(earnedPoints);

@@ -6,7 +6,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.mathematica.globals.AppData;
-import org.mathematica.logging.Logger;
 import org.mathematica.logic.ProfileHandler;
 import org.mathematica.logic.RetainedChanges;
 import org.mathematica.logic.RetainedConfig;
@@ -63,11 +62,9 @@ public class NewMainMenu extends Activity implements OnClickListener {
 	private Button userProfileButton;
 
 	private int gameDifficulty = 0;
+	private int game_board_size = 0;
 
 	private boolean hasLoadedSmallImage = false;
-	private boolean hasLoadedLargeImage = false;
-
-	private static final Logger logger = new Logger("NewMainMenu");
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -78,8 +75,11 @@ public class NewMainMenu extends Activity implements OnClickListener {
 		setContentView(R.layout.activity_new_main_menu);
 
 		smallRadioButton = (RadioButton) findViewById(R.id.radio_small);
+		smallRadioButton.setOnClickListener(this);
 		mediumRadioButton = (RadioButton) findViewById(R.id.radio_medium);
+		mediumRadioButton.setOnClickListener(this);
 		largeRadioButton = (RadioButton) findViewById(R.id.radio_large);
+		largeRadioButton.setOnClickListener(this);
 
 		easyGameButton = ((Button) findViewById(R.id.easy_button));
 		easyGameButton.setOnClickListener(this);
@@ -140,7 +140,7 @@ public class NewMainMenu extends Activity implements OnClickListener {
 			break;
 		}
 
-		int game_board_size = RetainedConfig
+		game_board_size = RetainedConfig
 				.getConfigValue(RetainedConfig.BOARD_SIZE);
 		switch (game_board_size) {
 		case 0:
@@ -157,7 +157,10 @@ public class NewMainMenu extends Activity implements OnClickListener {
 			break;
 		}
 
-		new ShowLatestNews().execute();
+		if (AppData.justOpenedTheApp) {
+			new ShowLatestNews().execute();
+			AppData.justOpenedTheApp = false;
+		}
 
 		AppData.username = ProfileHandler.getUsername();
 		AppData.userProfilePictureURL = ProfileHandler.getProfilePictureURL();
@@ -172,7 +175,6 @@ public class NewMainMenu extends Activity implements OnClickListener {
 					1001).execute();
 		} else {
 			new RetrieveUserProfile().execute();
-			new RetrieveLargeUserProfilePicture().execute();
 		}
 	}
 
@@ -185,7 +187,7 @@ public class NewMainMenu extends Activity implements OnClickListener {
 		activityToast.show();
 	}
 
-	private int[] getBameBoard() {
+	private int[] getGameBoard() {
 		int digits = 2;
 		int limit = 4;
 
@@ -278,40 +280,6 @@ public class NewMainMenu extends Activity implements OnClickListener {
 		}
 	}
 
-	private class RetrieveLargeUserProfilePicture extends
-			AsyncTask<String, Void, String> {
-
-		@Override
-		protected String doInBackground(String... params) {
-			try {
-				if (AppData.largeUserProfilePicture == null) {
-					AppData.largeUserProfilePicture = BitmapFactory
-							.decodeStream((InputStream) new URL(
-									AppData.userProfilePictureURL + "?sz=800")
-									.getContent());
-				}
-				hasLoadedLargeImage = true;
-			} catch (MalformedURLException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			return null;
-		}
-
-		@Override
-		protected void onPostExecute(String result) {
-		}
-
-		@Override
-		protected void onPreExecute() {
-		}
-
-		@Override
-		protected void onProgressUpdate(Void... values) {
-		}
-	}
-
 	private class ShowLatestNews extends AsyncTask<String, Void, String> {
 
 		@Override
@@ -361,7 +329,6 @@ public class NewMainMenu extends Activity implements OnClickListener {
 				AppData.username = username;
 				ProfileHandler.saveUsername(AppData.username);
 				new RetrieveUserProfile().execute();
-				new RetrieveLargeUserProfilePicture().execute();
 			}
 		});
 	}
@@ -395,8 +362,28 @@ public class NewMainMenu extends Activity implements OnClickListener {
 	}
 
 	public void onClick(View v) {
+
+		if (v == timedRadioButton) {
+			showToast("Timed - Earn points and brag about them",
+					Toast.LENGTH_SHORT);
+			setUiTimedGameMode();
+		}
+
+		if (v == normalRadioButton) {
+			showToast("Normal - Enjoy pointless gameplay", Toast.LENGTH_SHORT);
+			setUINormalGameMode();
+		}
+		
+		if (v == timedRadioButton || v == normalRadioButton
+				|| v == smallRadioButton || v == mediumRadioButton
+				|| v == largeRadioButton) {
+			getGameMode();
+			getGameBoard();
+			return;
+		}
+
 		if (v == userProfileButton) {
-			if (!hasLoadedLargeImage || !hasLoadedSmallImage) {
+			if (!hasLoadedSmallImage) {
 				showToast("Still loading app. Wait 2 more seconds!",
 						Toast.LENGTH_SHORT);
 				return;
@@ -407,19 +394,6 @@ public class NewMainMenu extends Activity implements OnClickListener {
 			startActivity(intent);
 			overridePendingTransition(R.anim.slide_bottom_up_animation,
 					R.anim.stay_put);
-			return;
-		}
-
-		if (v == timedRadioButton) {
-			showToast("Timed - Earn points and brag about them",
-					Toast.LENGTH_SHORT);
-			setUiTimedGameMode();
-			return;
-		}
-
-		if (v == normalRadioButton) {
-			showToast("Normal - Enjoy pointless gameplay", Toast.LENGTH_SHORT);
-			setUINormalGameMode();
 			return;
 		}
 
@@ -438,7 +412,7 @@ public class NewMainMenu extends Activity implements OnClickListener {
 				public void onClick(DialogInterface dialog, int which) {
 					switch (which) {
 					case DialogInterface.BUTTON_POSITIVE:
-						int[] settings = getBameBoard();
+						int[] settings = getGameBoard();
 						Level levelToContinue = new Level(settings[0],
 								settings[1], settings[2], gameDifficulty,
 								getGameMode());
@@ -476,7 +450,7 @@ public class NewMainMenu extends Activity implements OnClickListener {
 					.setPositiveButton("Start new one", dialogClickListener)
 					.show();
 		} else {
-			int[] settings = getBameBoard();
+			int[] settings = getGameBoard();
 			Level level = new Level(settings[0], settings[1], settings[2],
 					gameDifficulty, getGameMode());
 			Intent intent = new Intent(NewMainMenu.this, GameScreen.class);

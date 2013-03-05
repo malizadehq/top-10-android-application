@@ -30,7 +30,7 @@
     <string name="splash_title" translatable="false">Mathematica</string>
     <string name="splash_subtitle" translatable="false">PRO Edition</string>
     <string name="close" translatable="false">Close</string>
-    <string name="points_label" translatable="false">POINTS</string>
+    <string name="points_label" translatable="false">TOKENS</string>
     <string name="contentDescription" translatable="false">Image used inside Mathematica PRO. All images are free to use!</string>
     <string name="clear_notes" translatable="false">Clear Notes</string>
     <string name="hint" translatable="false">Write down numbers here to free your mind!</string>

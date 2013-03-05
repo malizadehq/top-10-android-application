@@ -16,17 +16,18 @@ public class AppData {
 
 	public static Context applicationContext;
 
-	public static Bitmap largeUserProfilePicture = null;
 	public static Bitmap smallUserProfilePicture = null;
 
 	public static Typeface joystickFont;
 	public static Typeface quicksandFont;
 	public static Typeface gameNightFont;
 	public static Typeface westernFont;
-	
+
 	public static String username = "";
 	public static String email = "";
 	public static String userProfilePictureURL;
-	
+
 	public static String oldMessage = "";
+	
+	public static boolean justOpenedTheApp = true;
 }

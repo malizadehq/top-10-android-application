@@ -1,8 +1,6 @@
 package org.mathematica.pro;
 
 import org.mathematica.globals.AppData;
-import org.mathematica.logic.CheckPurchase;
-import org.mathematica.merchent.BuyableItems;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -39,9 +37,8 @@ public class SplashScreen extends Activity {
 		welcomePage = (WebView) findViewById(R.id.welcomePage);
 		welcomePage.loadData(getText(R.string.html_page).toString(),
 				"text/html", "UTF-8");
-		
+
 		AppData.applicationContext = this.getApplicationContext();
-		CheckPurchase.setPurchased(BuyableItems.items.get(17).key, true);
 
 		AppData.quicksandFont = Typeface.createFromAsset(getAssets(),
 				"fonts/qs_reg.otf");

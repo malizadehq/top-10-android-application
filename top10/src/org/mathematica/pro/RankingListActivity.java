@@ -15,6 +15,7 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -22,6 +23,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -64,6 +66,20 @@ public class RankingListActivity extends Activity {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.help_action_bar, menu);
 		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case android.R.id.home:
+			Intent intent = new Intent(RankingListActivity.this,
+					UserProfileActivity.class);
+			intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			startActivity(intent);
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
 	}
 
 	class UpdateScoreOnServer extends AsyncTask<String, int[], String> {
@@ -132,7 +148,7 @@ public class RankingListActivity extends Activity {
 
 			((TextView) v.findViewById(R.id.name_and_position)).setText(""
 					+ (position + 1) + ". " + user.username + " : "
-					+ user.overall_score + " point"
+					+ user.overall_score + " token"
 					+ (user.overall_score == 1 ? "" : "s"));
 
 			return v;

@@ -276,6 +276,7 @@
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="fill_parent"
         android:layout_height="10dip"
+        android:progressDrawable="@drawable/progress_bar"
         android:layout_gravity="top"
         android:indeterminate="true" />
 
