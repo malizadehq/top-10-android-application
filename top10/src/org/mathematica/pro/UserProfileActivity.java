@@ -15,6 +15,8 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -81,6 +83,8 @@ public class UserProfileActivity extends Activity implements OnClickListener,
 		actionBar = getActionBar();
 		actionBar.setTitle(AppData.username);
 		actionBar.setDisplayHomeAsUpEnabled(true);
+		actionBar.setBackgroundDrawable(new ColorDrawable(Color
+				.parseColor("#99cc00")));
 
 		setCurrentAvailablePoints(PointsManager.getPoints());
 	}
@@ -109,7 +113,7 @@ public class UserProfileActivity extends Activity implements OnClickListener,
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.user_profile_action_bar, menu);
+		inflater.inflate(R.menu.no_items_action_bar, menu);
 		return true;
 	}
 
@@ -200,6 +204,7 @@ public class UserProfileActivity extends Activity implements OnClickListener,
 							if (CheckPurchase.isPurchased(BuyableItems.items
 									.get(position).key)) {
 								if (BuyableItems.items.get(position).type == BUYABLE_TYPE.TIPS_AND_TRICKS) {
+
 									Intent intent = new Intent(
 											UserProfileActivity.this,
 											TutorialView.class);
@@ -235,7 +240,6 @@ public class UserProfileActivity extends Activity implements OnClickListener,
 									}
 									setCurrentAvailablePoints(PointsManager
 											.getPoints());
-									SoundManager.playSound(R.raw.purchase_made);
 								} else {
 									showToast("Need more tokens",
 											Toast.LENGTH_SHORT);
@@ -256,9 +260,9 @@ public class UserProfileActivity extends Activity implements OnClickListener,
 		}
 		if (v == podiumOption) {
 			if (CheckInternet.isOnline()) {
-				Intent intent = new Intent(UserProfileActivity.this,
-						RankingListActivity.class);
-				startActivity(intent);
+				// Intent intent = new Intent(UserProfileActivity.this,
+				// RankingListActivity.class);
+				startActivity(new Intent(this, MainActivity.class));
 			} else {
 				Toast.makeText(this, "No internet connection found!",
 						Toast.LENGTH_SHORT).show();
@@ -277,7 +281,7 @@ public class UserProfileActivity extends Activity implements OnClickListener,
 			shareIntent.putExtra(android.content.Intent.EXTRA_TEXT,
 					shareMessage);
 			startActivity(Intent.createChooser(shareIntent,
-					"Challenge the world"));
+					"Share with friends"));
 		}
 
 		if (v == soundOption) {
@@ -301,15 +305,15 @@ public class UserProfileActivity extends Activity implements OnClickListener,
 
 	public boolean onLongClick(View v) {
 		if (v == helpOption) {
-			showToast("How to play the game!", Toast.LENGTH_SHORT);
+			showToast("Game manual", Toast.LENGTH_SHORT);
 		}
 
 		if (v == rateOption) {
-			showToast("Rate the game on Google Play", Toast.LENGTH_SHORT);
+			showToast("Rate on Play Store", Toast.LENGTH_SHORT);
 		}
 
 		if (v == shareContentButton) {
-			showToast("Share this app", Toast.LENGTH_SHORT);
+			showToast("Share with friends", Toast.LENGTH_SHORT);
 		}
 
 		if (v == soundOption) {
@@ -317,7 +321,7 @@ public class UserProfileActivity extends Activity implements OnClickListener,
 		}
 
 		if (v == podiumOption) {
-			showToast("Top 10 best players!", Toast.LENGTH_SHORT);
+			showToast("Top 10", Toast.LENGTH_SHORT);
 		}
 		return false;
 	}

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 import org.apache.http.NameValuePair;
+import org.mathematica.constants.HTTP;
 import org.mathematica.logging.Logger;
 import org.mathematica.logic.RetainedConfig;
 import org.mathematica.rankings.HTTPRequests;
@@ -26,6 +27,11 @@ public class NotificationCenter {
 		String requestOutput = HTTPRequests.getInstante()
 				.doHTTPRequestStringPost("latest_news_id.php",
 						new ArrayList<NameValuePair>());
+
+		if (requestOutput.equals(HTTP.ERROR)) {
+			return false;
+		}
+
 		StringTokenizer st = new StringTokenizer(requestOutput, ";");
 		int latest_news_id = Integer.parseInt(st.nextToken().toString());
 		logger.log("latest_news_id: " + latest_news_id);

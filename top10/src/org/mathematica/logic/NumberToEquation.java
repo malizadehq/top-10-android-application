@@ -21,7 +21,7 @@ public class NumberToEquation {
 	private String getEquationInt(int result, OP_DIFF questionDifficulty,
 			int treeDepth) {
 
-		if (treeDepth <= 1 || result <= 1)
+		if (treeDepth <= 1)
 			return "" + result;
 
 		OP_DIFF sourceDifficulty = OP_DIFF.EASY_DIFF;
@@ -118,8 +118,14 @@ public class NumberToEquation {
 				operator = (char) 'P';
 			} else if (direction == 1) {
 				if (result % 2 == 0) {
-					firstOperand = cmmdc(result);
-					secondOperand = result / firstOperand;
+					try {
+						firstOperand = cmmdc(result);
+						secondOperand = result / firstOperand;
+					} catch (ArithmeticException e) {
+						firstOperand = cmmdc(result);
+						secondOperand = result / firstOperand;
+					}
+
 					operator = (char) 0x00D7;
 				} else {
 					secondOperand = (int) ((Math.random() * 10) + 1);

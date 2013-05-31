@@ -15,7 +15,7 @@ public class BoardTilesHandler {
 		}
 
 		/*
-		 * Make sure there are no vertical word with length larger then max
+		 * Make sure there are no vertical words with length larger then max
 		 */
 		for (int col = 0; col < columns; col++) {
 			int length = 0;

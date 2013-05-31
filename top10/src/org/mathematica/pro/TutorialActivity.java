@@ -30,14 +30,14 @@ public class TutorialActivity extends Activity {
 		_tutorialText.setText(new GameTutorial().getTutorial());
 
 		ActionBar actionBar = getActionBar();
-		actionBar.setTitle("In-depth tutorial");
+		actionBar.setTitle("Game manual");
 		actionBar.setDisplayHomeAsUpEnabled(true);
 	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.help_action_bar, menu);
+		inflater.inflate(R.menu.no_items_action_bar, menu);
 		return true;
 	}
 

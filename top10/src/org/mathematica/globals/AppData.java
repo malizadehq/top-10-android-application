@@ -25,9 +25,9 @@ public class AppData {
 
 	public static String username = "";
 	public static String email = "";
-	public static String userProfilePictureURL;
+	public static String userProfilePictureURL = "";
 
 	public static String oldMessage = "";
-	
+
 	public static boolean justOpenedTheApp = true;
 }

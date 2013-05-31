@@ -109,10 +109,10 @@
                 android:id="@+id/easy_button"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
-                android:layout_marginTop="5dip"
                 android:layout_marginBottom="1dip"
                 android:layout_marginLeft="15dip"
                 android:layout_marginRight="1dip"
+                android:layout_marginTop="5dip"
                 android:layout_weight="1"
                 android:background="@drawable/easy_button_selector"
                 android:text="Easy"
@@ -123,10 +123,10 @@
                 android:id="@+id/medium_button"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
-                android:layout_marginTop="5dip"
                 android:layout_marginBottom="1dip"
                 android:layout_marginLeft="1dip"
                 android:layout_marginRight="15dip"
+                android:layout_marginTop="5dip"
                 android:layout_weight="1"
                 android:background="@drawable/medium_button_selector"
                 android:gravity="center"
@@ -139,20 +139,20 @@
             android:layout_width="fill_parent"
             android:layout_height="10dip"
             android:layout_weight="1" >
-            
+
             <Button
                 android:id="@+id/user_profile_picture"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
+                android:layout_marginBottom="5dip"
                 android:layout_marginLeft="15dip"
                 android:layout_marginRight="2dip"
                 android:layout_marginTop="2dip"
-                android:layout_marginBottom="5dip"
                 android:layout_weight="1"
                 android:background="@drawable/profile_gradient"
                 android:textSize="35sp" >
             </Button>
-            <!-- 
+            <!--
             <LinearLayout
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
@@ -169,16 +169,17 @@
                     android:background="@drawable/profile_gradient"
                     android:contentDescription="@string/contentDescription"
                     android:scaleType="centerCrop" />
-            </LinearLayout> -->
+            </LinearLayout>
+            -->
 
             <Button
                 android:id="@+id/hard_button"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
+                android:layout_marginBottom="5dip"
                 android:layout_marginLeft="1dip"
                 android:layout_marginRight="15dip"
                 android:layout_marginTop="1dip"
-                android:layout_marginBottom="5dip"
                 android:layout_weight="1"
                 android:background="@drawable/hard_button_selector"
                 android:gravity="center"
@@ -270,14 +271,5 @@
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="10dip" />
-
-    <ProgressBar
-        android:id="@+id/progressBar"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="fill_parent"
-        android:layout_height="10dip"
-        android:progressDrawable="@drawable/progress_bar"
-        android:layout_gravity="top"
-        android:indeterminate="true" />
 
 </LinearLayout>

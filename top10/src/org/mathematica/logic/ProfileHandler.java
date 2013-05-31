@@ -7,13 +7,17 @@ import android.content.SharedPreferences.Editor;
 
 public class ProfileHandler {
 
-	private static SharedPreferences storage;
-	private static Editor commiter;
+	private static SharedPreferences storage = null;
+	private static Editor commiter = null;
 
 	private static void initStuff() {
-		storage = AppData.applicationContext.getSharedPreferences(
-				"MATHEMATICA_PRO", 0);
-		commiter = storage.edit();
+		if (storage == null) {
+			storage = AppData.applicationContext.getSharedPreferences(
+					"MATHEMATICA_PRO", 0);
+		}
+		if (commiter == null) {
+			commiter = storage.edit();
+		}
 	}
 
 	public static void saveUsername(String username) {
@@ -25,6 +29,17 @@ public class ProfileHandler {
 	public static String getUsername() {
 		initStuff();
 		return storage.getString("PROFILE_USERNAME", "");
+	}
+
+	public static void saveEmail(String email) {
+		initStuff();
+		commiter.putString("PROFILE_EMAIL", email);
+		commiter.commit();
+	}
+
+	public static String getEmail() {
+		initStuff();
+		return storage.getString("PROFILE_EMAIL", "");
 	}
 
 	public static void saveProfilePictureURL(String pictureURL) {

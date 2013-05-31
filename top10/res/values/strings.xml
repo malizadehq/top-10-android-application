@@ -98,7 +98,7 @@
 						<font color="#33b5e5">P</font>
 						<font color="#99cc00">&nbsp;10</font>
 					</h1>
-          <p class="post-info">&#8220;Sharpen you mind&#8221;</p>
+          <p class="post-info">&#8220;Sharpen your mind&#8221;</p>
 				</div>
 			</div>
 		</div>		
@@ -106,8 +106,5 @@
 </html>
         ]]>
     </string>
-    <string name="hello_world">Hello world!</string>
-    <string name="menu_settings">Settings</string>
-    <string name="title_activity_testing">Testing</string>
 
 </resources>
