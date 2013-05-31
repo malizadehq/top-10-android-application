@@ -26,7 +26,6 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
@@ -34,27 +33,17 @@ import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
 import android.view.animation.RotateAnimation;
 import android.widget.Button;
-import android.widget.ProgressBar;
 import android.widget.RadioButton;
-import android.widget.Toast;
 
 import com.google.android.gms.auth.GoogleAuthUtil;
 
 public class NewMainMenu extends Activity implements OnClickListener {
-	private final int TIME_BEFORE_BACK_REQUEST_EXPIRES = 5 * 1000;
-
-	private ProgressBar progressBar;
-
 	private RadioButton timedRadioButton;
 	private RadioButton normalRadioButton;
 
 	private RadioButton smallRadioButton;
 	private RadioButton mediumRadioButton;
 	private RadioButton largeRadioButton;
-
-	private Toast activityToast = null;
-
-	private boolean willExitOnBackPressed = false;
 
 	private Button easyGameButton;
 	private Button mediumGameButton;
@@ -64,7 +53,28 @@ public class NewMainMenu extends Activity implements OnClickListener {
 	private int gameDifficulty = 0;
 	private int game_board_size = 0;
 
-	private boolean hasLoadedSmallImage = false;
+	private RetrieveUserProfile rupThread = null;
+	private GetNameInForeground gnifThread = null;
+	private ShowLatestNews slnThread = null;
+	private UpdateUserInfoFromServer uuifsThread = null;
+
+	private void closeAllRunningThreads() {
+		closeThread(rupThread);
+		closeThread(gnifThread);
+		closeThread(slnThread);
+		closeThread(uuifsThread);
+	}
+
+	private void closeThread(AsyncTask<?, ?, ?> task) {
+		if (task == null) {
+			return;
+		}
+
+		if (task.getStatus() == AsyncTask.Status.PENDING
+				|| task.getStatus() == AsyncTask.Status.RUNNING) {
+			task.cancel(true);
+		}
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -93,6 +103,25 @@ public class NewMainMenu extends Activity implements OnClickListener {
 		mediumGameButton.setTypeface(AppData.gameNightFont);
 		hardGameButton.setTypeface(AppData.gameNightFont);
 
+		AppData.username = ProfileHandler.getUsername();
+		AppData.userProfilePictureURL = ProfileHandler.getProfilePictureURL();
+		AppData.email = ProfileHandler.getEmail();
+		if (AppData.email.length() == 0) {
+			getAccountName();
+		}
+
+		if (AppData.username.equals("")
+				&& AppData.userProfilePictureURL.equals("")) {
+			gnifThread = new GetNameInForeground(NewMainMenu.this,
+					AppData.email,
+					"oauth2:https://www.googleapis.com/auth/userinfo.profile",
+					1001);
+			gnifThread.execute();
+		} else {
+			rupThread = new RetrieveUserProfile();
+			rupThread.execute();
+		}
+
 		RotateAnimation ranim = (RotateAnimation) AnimationUtils.loadAnimation(
 				AppData.applicationContext, R.anim.giggle);
 		RotateAnimation ranim1 = (RotateAnimation) AnimationUtils
@@ -113,8 +142,6 @@ public class NewMainMenu extends Activity implements OnClickListener {
 		hardGameButton.setAnimation(ranim2);
 		userProfileButton.clearAnimation();
 		userProfileButton.setAnimation(ranim3);
-
-		progressBar = (ProgressBar) findViewById(R.id.progressBar);
 
 		timedRadioButton = (RadioButton) findViewById(R.id.radio_timed);
 		timedRadioButton.setOnClickListener(this);
@@ -158,33 +185,10 @@ public class NewMainMenu extends Activity implements OnClickListener {
 		}
 
 		if (AppData.justOpenedTheApp) {
-			new ShowLatestNews().execute();
+			slnThread = new ShowLatestNews();
+			slnThread.execute();
 			AppData.justOpenedTheApp = false;
 		}
-
-		AppData.username = ProfileHandler.getUsername();
-		AppData.userProfilePictureURL = ProfileHandler.getProfilePictureURL();
-		if (AppData.email.length() == 0) {
-			getAccountName();
-		}
-
-		if (AppData.username.equals("")
-				&& AppData.userProfilePictureURL.equals("")) {
-			new GetNameInForeground(NewMainMenu.this, AppData.email,
-					"oauth2:https://www.googleapis.com/auth/userinfo.profile",
-					1001).execute();
-		} else {
-			new RetrieveUserProfile().execute();
-		}
-	}
-
-	private void showToast(String message, int duration) {
-		if (activityToast != null) {
-			activityToast.cancel();
-		}
-		activityToast = Toast.makeText(AppData.applicationContext, message,
-				duration);
-		activityToast.show();
 	}
 
 	private int[] getGameBoard() {
@@ -198,11 +202,11 @@ public class NewMainMenu extends Activity implements OnClickListener {
 			limit = 5;
 		} else if (mediumRadioButton.isChecked()) {
 			game_board_size = 1;
-			digits = ((int) (Math.random() * 2) + 2);
+			digits = ((int) (Math.random() * 2) + 1);
 			limit = 6;
 		} else {
 			game_board_size = 2;
-			digits = ((int) (Math.random() * 2) + 3);
+			digits = ((int) (Math.random() * 2) + 2);
 			limit = 7;
 		}
 
@@ -254,7 +258,7 @@ public class NewMainMenu extends Activity implements OnClickListener {
 				if (AppData.smallUserProfilePicture == null) {
 					AppData.smallUserProfilePicture = BitmapFactory
 							.decodeStream((InputStream) new URL(
-									AppData.userProfilePictureURL + "?sz=600")
+									AppData.userProfilePictureURL + "?sz=300")
 									.getContent());
 				}
 			} catch (MalformedURLException e) {
@@ -263,7 +267,6 @@ public class NewMainMenu extends Activity implements OnClickListener {
 				e.printStackTrace();
 			}
 			showProfilePicture();
-			hasLoadedSmallImage = true;
 			return null;
 		}
 
@@ -284,7 +287,8 @@ public class NewMainMenu extends Activity implements OnClickListener {
 
 		@Override
 		protected String doInBackground(String... params) {
-			return NotificationCenter.showLatestNews(NewMainMenu.this);
+			// return NotificationCenter.showLatestNews(NewMainMenu.this);
+			return "";
 		}
 
 		@Override
@@ -293,7 +297,8 @@ public class NewMainMenu extends Activity implements OnClickListener {
 				AlertDialog.Builder builder = new AlertDialog.Builder(
 						NewMainMenu.this);
 				builder.setMessage(result).setTitle("Latest news")
-						.setPositiveButton("Read it!", null).show();
+						.setPositiveButton("Read it!", null)
+						.setIcon(R.drawable.dialog_icon).show();
 			}
 		}
 
@@ -316,7 +321,6 @@ public class NewMainMenu extends Activity implements OnClickListener {
 			public void run() {
 				LayerDrawable layerDrawable = new LayerDrawable(layers);
 				i.setBackgroundDrawable(layerDrawable);
-				progressBar.setVisibility(View.GONE);
 			}
 		});
 	}
@@ -328,7 +332,8 @@ public class NewMainMenu extends Activity implements OnClickListener {
 			public void run() {
 				AppData.username = username;
 				ProfileHandler.saveUsername(AppData.username);
-				new RetrieveUserProfile().execute();
+				rupThread = new RetrieveUserProfile();
+				rupThread.execute();
 			}
 		});
 	}
@@ -338,42 +343,28 @@ public class NewMainMenu extends Activity implements OnClickListener {
 		Account[] accounts = mAccountManager
 				.getAccountsByType(GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE);
 		AppData.email = accounts[0].name;
-		new UpdateUserInfoFromServer().execute(AppData.email);
+		uuifsThread = new UpdateUserInfoFromServer();
+		uuifsThread.execute(AppData.email);
+		ProfileHandler.saveEmail(accounts[0].name);
 		return AppData.email;
 	}
 
 	@Override
 	public void onBackPressed() {
-		if (!willExitOnBackPressed) {
-			Toast.makeText(this, "Press the 'Back' key again to exit.",
-					Toast.LENGTH_SHORT).show();
-			willExitOnBackPressed = true;
-
-			Handler handler = new Handler();
-			handler.postDelayed(new Runnable() {
-				public void run() {
-					willExitOnBackPressed = false;
-				}
-			}, TIME_BEFORE_BACK_REQUEST_EXPIRES);
-
-			return;
-		}
+		closeAllRunningThreads();
 		finish();
 	}
 
 	public void onClick(View v) {
 
 		if (v == timedRadioButton) {
-			showToast("Timed - Earn points and brag about them",
-					Toast.LENGTH_SHORT);
 			setUiTimedGameMode();
 		}
 
 		if (v == normalRadioButton) {
-			showToast("Normal - Enjoy pointless gameplay", Toast.LENGTH_SHORT);
 			setUINormalGameMode();
 		}
-		
+
 		if (v == timedRadioButton || v == normalRadioButton
 				|| v == smallRadioButton || v == mediumRadioButton
 				|| v == largeRadioButton) {
@@ -383,12 +374,7 @@ public class NewMainMenu extends Activity implements OnClickListener {
 		}
 
 		if (v == userProfileButton) {
-			if (!hasLoadedSmallImage) {
-				showToast("Still loading app. Wait 2 more seconds!",
-						Toast.LENGTH_SHORT);
-				return;
-			}
-
+			closeAllRunningThreads();
 			Intent intent = new Intent(NewMainMenu.this,
 					UserProfileActivity.class);
 			startActivity(intent);
@@ -408,6 +394,7 @@ public class NewMainMenu extends Activity implements OnClickListener {
 		}
 
 		if (SavedGameData.isGameInProgress()) {
+			closeAllRunningThreads();
 			DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int which) {
 					switch (which) {
@@ -446,10 +433,12 @@ public class NewMainMenu extends Activity implements OnClickListener {
 			builder.setMessage(
 					"A previous unfinished game has been detected. Continue last game or start a new one?")
 					.setTitle("Unfinished game detected!")
+					.setIcon(R.drawable.dialog_icon)
 					.setNegativeButton("Continue last", dialogClickListener)
 					.setPositiveButton("Start new one", dialogClickListener)
 					.show();
 		} else {
+			closeAllRunningThreads();
 			int[] settings = getGameBoard();
 			Level level = new Level(settings[0], settings[1], settings[2],
 					gameDifficulty, getGameMode());

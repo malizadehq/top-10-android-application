@@ -22,27 +22,27 @@ import org.mathematica.rankings.RankingWrapper;
 import org.mathematica.sound.SoundManager;
 import org.mathematica.structures.Level;
 
-import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.LayoutInflater;
+import android.text.Html;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
 import android.view.animation.ScaleAnimation;
@@ -52,10 +52,10 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-@SuppressLint("ParserError")
 public class GameScreen extends Activity implements OnClickListener,
 		OnLongClickListener {
 
+	private static final String NO_QUESTION_STRING = "";
 	private static final int DIFFICULTY_TIME_RATIO = 6;
 	private static final int XP_TO_POINTS_RATIO = 50;
 	private ArrayList<Button> tiles;
@@ -63,8 +63,6 @@ public class GameScreen extends Activity implements OnClickListener,
 	private TextView vertQuestion;
 
 	private boolean newGame = false;
-
-	private Toast toast;
 
 	private int currentGamePoints = 0;
 
@@ -86,10 +84,15 @@ public class GameScreen extends Activity implements OnClickListener,
 
 	ActionBar actionBar = null;
 	MenuItem remainingTimeAction = null;
+	MenuItem remainingLivesAction = null;
 	TextView statusMessage = null;
 
 	private ProgressBar progressBar = null;
 	private int totalAvailableTiles = 0;
+
+	private boolean backWillNotWork = false;
+
+	private int perfectGameBonus = 1;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -133,11 +136,6 @@ public class GameScreen extends Activity implements OnClickListener,
 					.getSavedInt(SavedGameData.SAVED_LIVES_LEFT);
 		}
 
-		if (currentLevelGameMode == 0) {
-			Toast.makeText(this, "" + livesLeft + " lives available!",
-					Toast.LENGTH_SHORT).show();
-		}
-
 		setUpTiles();
 		setTilesListener();
 		drawGameBoard();
@@ -172,6 +170,13 @@ public class GameScreen extends Activity implements OnClickListener,
 		actionBar.setDisplayHomeAsUpEnabled(true);
 
 		statusMessage = ((TextView) findViewById(R.id.game_info_screen));
+	}
+
+	private void increaseLivesLeft() {
+		if (livesLeft < availableLives) {
+			livesLeft++;
+		}
+		showLivesLeft(livesLeft);
 	}
 
 	private void updateGameProgressBar(int filledInTiles) {
@@ -230,10 +235,17 @@ public class GameScreen extends Activity implements OnClickListener,
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.game_screen_action_bar, menu);
 		remainingTimeAction = (MenuItem) menu.findItem(R.id.remaining_time);
+		remainingLivesAction = (MenuItem) menu.findItem(R.id.remaining_lives);
 
 		if (currentLevelGameMode == 1) {
 			remainingTimeAction.setTitle("Unlimited time");
+			actionBar.setBackgroundDrawable(null);
 		}
+
+		if (currentLevelGameMode == 0) {
+			showLivesLeft(livesLeft);
+		}
+
 		return true;
 	}
 
@@ -245,7 +257,9 @@ public class GameScreen extends Activity implements OnClickListener,
 				public void run() {
 
 					for (Button s : tiles) {
-						s.setTextSize(25);
+						s.setTextSize(32);
+						s.setTextColor(Color.BLACK);
+
 					}
 
 					for (int i = 0; i < AppData.ROWS; i++) {
@@ -481,25 +495,31 @@ public class GameScreen extends Activity implements OnClickListener,
 		int timeUpdatesTextColor = Color.parseColor("#33b5e5");
 
 		if (secondsLeft == (int) (totalGameTime * 0.75)) {
-			showCustomMessageOnScreen("Don't forget the time!",
+			showCustomMessageOnScreen("Don't forget to watch the time!",
 					Toast.LENGTH_LONG, timeUpdatesTextColor);
 			return;
 		}
 
 		if (secondsLeft == (int) (totalGameTime * 0.5)) {
-			showCustomMessageOnScreen("Half way there!", Toast.LENGTH_LONG,
-					timeUpdatesTextColor);
+			showCustomMessageOnScreen("Half the time, gone!",
+					Toast.LENGTH_LONG, timeUpdatesTextColor);
 			return;
 		}
 
 		if (secondsLeft == (int) (totalGameTime * 0.25)) {
-			showCustomMessageOnScreen("Watch the time!", Toast.LENGTH_LONG,
+			showCustomMessageOnScreen("Three quarters into the round!",
+					Toast.LENGTH_LONG, timeUpdatesTextColor);
+			return;
+		}
+
+		if (secondsLeft == 1) {
+			showCustomMessageOnScreen("Out of time!", Toast.LENGTH_SHORT,
 					timeUpdatesTextColor);
 			return;
 		}
 
 		if (secondsLeft == 0) {
-			showCustomMessageOnScreen("Out of time!", Toast.LENGTH_LONG, 0);
+			SoundManager.playSound(R.raw.sound_lost_level);
 			timer.cancel(true);
 			SavedGameData.setGameInProgress(false);
 			Intent intent = new Intent(GameScreen.this, NewMainMenu.class);
@@ -555,6 +575,11 @@ public class GameScreen extends Activity implements OnClickListener,
 
 	@Override
 	public void onBackPressed() {
+
+		if (backWillNotWork) {
+			return;
+		}
+
 		timer.cancel(true);
 		saveCurrentLevelDetails();
 		Intent intent = new Intent(GameScreen.this, NewMainMenu.class);
@@ -571,12 +596,6 @@ public class GameScreen extends Activity implements OnClickListener,
 
 		Runnable mMusicRunnable = new Runnable() {
 			public void run() {
-				LayoutInflater inflater = getLayoutInflater();
-				View layout = inflater.inflate(R.layout.remaining_lives_layout,
-						(ViewGroup) findViewById(R.id.toast_layout_root));
-
-				TextView text = (TextView) layout.findViewById(R.id.text);
-
 				final char ALIVE_HEART = (char) 0x2665;
 				final char DEAD_HEART = (char) 0x2661;
 				char message[] = new char[9];
@@ -589,24 +608,7 @@ public class GameScreen extends Activity implements OnClickListener,
 				for (int i = 0; i < livesLeft; i++) {
 					message[i] = ALIVE_HEART;
 				}
-				text.setText(new String(message));
-
-				text.setTextColor(Color.parseColor("#B20000"));
-
-				if (toast != null) {
-					toast.cancel();
-				}
-				toast = new Toast(getApplicationContext());
-				toast.setDuration(Toast.LENGTH_SHORT);
-				toast.setView(layout);
-				toast.show();
-
-				Handler handler = new Handler();
-				handler.postDelayed(new Runnable() {
-					public void run() {
-						toast.cancel();
-					}
-				}, 1000);
+				remainingLivesAction.setTitle(new String(message));
 			}
 		};
 		mMusicHandler.post(mMusicRunnable);
@@ -637,6 +639,21 @@ public class GameScreen extends Activity implements OnClickListener,
 		QuestionsExtracter analizer = new QuestionsExtracter(AppData.board,
 				OP_DIFF.values()[diff]);
 		AppData.questions = analizer.getExtractedSequences();
+
+		switch (diff) {
+		case 0:
+			actionBar.setBackgroundDrawable(new ColorDrawable(Color
+					.parseColor("#33b5e5")));
+			break;
+		case 1:
+			actionBar.setBackgroundDrawable(new ColorDrawable(Color
+					.parseColor("#ffbb33")));
+			break;
+		case 2:
+			actionBar.setBackgroundDrawable(new ColorDrawable(Color
+					.parseColor("#ff4444")));
+			break;
+		}
 	}
 
 	private void drawGameBoard() {
@@ -764,7 +781,7 @@ public class GameScreen extends Activity implements OnClickListener,
 		refreshGameTilesBackground();
 		for (int i = 0; i < tiles.size(); i++) {
 			if (v == tiles.get(i)) {
-				SoundManager.playSound(R.raw.click);
+				SoundManager.playSound(R.raw.sound_tile_clicked);
 				ScaleAnimation ranim = (ScaleAnimation) AnimationUtils
 						.loadAnimation(AppData.applicationContext, R.anim.zoom);
 				ranim.setFillAfter(true);
@@ -783,29 +800,29 @@ public class GameScreen extends Activity implements OnClickListener,
 							.getQuestionString().length()) {
 						setQuestionString(horQuestion,
 								questionHor.getQuestionString());
-						setQuestionString(vertQuestion, "----");
+						setQuestionString(vertQuestion, NO_QUESTION_STRING);
 					} else if (questionHor.getQuestionString().length() < questionVert
 							.getQuestionString().length()) {
 						setQuestionString(horQuestion,
 								questionHor.getQuestionString());
-						setQuestionString(vertQuestion, "----");
+						setQuestionString(vertQuestion, NO_QUESTION_STRING);
 					} else {
 						setQuestionString(horQuestion,
 								questionHor.getQuestionString());
-						setQuestionString(vertQuestion, "----");
+						setQuestionString(vertQuestion, NO_QUESTION_STRING);
 					}
 				} else {
 					if (questionHor != null)
 						setQuestionString(horQuestion,
 								questionHor.getQuestionString());
 					else
-						setQuestionString(horQuestion, "----");
+						setQuestionString(horQuestion, NO_QUESTION_STRING);
 
 					if (questionVert != null)
 						setQuestionString(vertQuestion,
 								questionVert.getQuestionString());
 					else
-						setQuestionString(vertQuestion, "----");
+						setQuestionString(vertQuestion, NO_QUESTION_STRING);
 				}
 
 				updateQuestionSpanOnBoard(pos[0], pos[1]);
@@ -931,8 +948,8 @@ public class GameScreen extends Activity implements OnClickListener,
 				Dialog dialog = null;
 				final CustomTextDialog.Builder customBuilder = new CustomTextDialog.Builder(
 						GameScreen.this);
-				customBuilder.setCloseListener(
-						new DialogInterface.OnClickListener() {
+				customBuilder
+						.setCloseListener(new DialogInterface.OnClickListener() {
 							public void onClick(DialogInterface dialog,
 									int which) {
 								String value = customBuilder.getValue();
@@ -949,7 +966,7 @@ public class GameScreen extends Activity implements OnClickListener,
 
 								dialog.dismiss();
 							}
-						}).setTypeFace(AppData.quicksandFont);
+						});
 				dialog = customBuilder.create();
 				dialog.show();
 			}
@@ -965,6 +982,7 @@ public class GameScreen extends Activity implements OnClickListener,
 
 			showCustomMessageOnScreen("WRONG!", Toast.LENGTH_SHORT,
 					Color.parseColor("#ff4444"));
+			perfectGameBonus = 0;
 
 			if (currentLevelGameMode == 1) {
 				return;
@@ -972,7 +990,9 @@ public class GameScreen extends Activity implements OnClickListener,
 
 			livesLeft--;
 			if (livesLeft == 0) {
-				showCustomMessageOnScreen("Out of lives!", Toast.LENGTH_LONG, 0);
+				SoundManager.playSound(R.raw.sound_lost_level);
+				showCustomMessageOnScreen("Out of lives!", Toast.LENGTH_SHORT,
+						0);
 				timer.cancel(true);
 				SavedGameData.setGameInProgress(false);
 				Intent intent = new Intent(GameScreen.this, NewMainMenu.class);
@@ -999,6 +1019,14 @@ public class GameScreen extends Activity implements OnClickListener,
 					combo = 0;
 				}
 				showCombo(combo);
+
+				boolean comboIsNotZero = (combo != 0);
+				boolean highEnoughtCombo = (combo
+						% (5 * (currentLevelDifficulty + 1)) == 0);
+				if (comboIsNotZero && highEnoughtCombo) {
+					increaseLivesLeft();
+				}
+
 			}
 		}
 	}
@@ -1102,27 +1130,89 @@ public class GameScreen extends Activity implements OnClickListener,
 				}
 			}
 			if (gameFinished) {
-				timer.cancel(true);
-				SavedGameData.setGameInProgress(false);
-
-				int earnedPoints = currentGamePoints / XP_TO_POINTS_RATIO;
-				String earnedPointsMessage = "";
-				earnedPointsMessage = earnedPoints == 0 ? "No tokens earned!"
-						: earnedPoints + " token(s) earned";
-				Toast.makeText(this, earnedPointsMessage, Toast.LENGTH_SHORT)
-						.show();
-				PointsManager.addPoints(earnedPoints);
-				new UpdateScoreOnServer().execute();
-				Intent intent = new Intent(GameScreen.this, NewMainMenu.class);
-				intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-				startActivity(intent);
-				overridePendingTransition(R.anim.slide_bottom_up_animation,
-						R.anim.stay_put);
+				SoundManager.playSound(R.raw.sound_completed_level);
+				doGameFinishedActions();
 			} else {
 				showToast("You still have " + mistakes + " mistake(s)",
 						Toast.LENGTH_SHORT);
 			}
 		}
+	}
+
+	private void doGameFinishedActions() {
+		int earnedPoints = currentGamePoints / XP_TO_POINTS_RATIO;
+		timer.cancel(true);
+		backWillNotWork = true;
+
+		if (currentLevelGameMode == 1) {
+			SavedGameData.setGameInProgress(false);
+			PointsManager.addPoints(earnedPoints);
+			new UpdateScoreOnServer().execute();
+			Intent intent = new Intent(GameScreen.this, NewMainMenu.class);
+			intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			startActivity(intent);
+			overridePendingTransition(R.anim.slide_bottom_up_animation,
+					R.anim.stay_put);
+			return;
+		}
+
+		DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+				switch (which) {
+				case DialogInterface.BUTTON_POSITIVE:
+					SavedGameData.setGameInProgress(false);
+					int earnedPoints = currentGamePoints / XP_TO_POINTS_RATIO;
+					PointsManager.addPoints(earnedPoints + perfectGameBonus);
+					new UpdateScoreOnServer().execute();
+					Intent intent = new Intent(GameScreen.this,
+							NewMainMenu.class);
+					intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+					startActivity(intent);
+					overridePendingTransition(R.anim.slide_bottom_up_animation,
+							R.anim.stay_put);
+					break;
+				case DialogInterface.BUTTON_NEGATIVE:
+					SavedGameData.setGameInProgress(false);
+					earnedPoints = currentGamePoints / XP_TO_POINTS_RATIO;
+					PointsManager.addPoints(earnedPoints + perfectGameBonus);
+					new UpdateScoreOnServer().execute();
+					intent = new Intent(GameScreen.this, NewMainMenu.class);
+					intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+					startActivity(intent);
+					overridePendingTransition(R.anim.slide_bottom_up_animation,
+							R.anim.stay_put);
+					Intent shareIntent = new Intent(
+							android.content.Intent.ACTION_SEND);
+					shareIntent.setType("text/plain");
+					shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT,
+							"Calculus expert");
+					String shareMessage = "I have just obtained a score of "
+							+ currentGamePoints
+							+ " points. I am doing my best to reach the Top 10! http://tinyurl.com/at43o6v";
+					shareIntent.putExtra(android.content.Intent.EXTRA_TEXT,
+							shareMessage);
+					startActivity(Intent.createChooser(shareIntent,
+							"Let the world know"));
+					break;
+				}
+			}
+		};
+
+		String extra = "";
+		if (perfectGameBonus != 0) {
+			extra = " + 1 bonus token";
+		}
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		String message = "SCORE:<br/><b>" + currentGamePoints
+				+ " points</b><br/><br/>TOKENS:<br/><b>" + earnedPoints
+				+ " token" + (earnedPoints == 1 ? "" : "s") + extra
+				+ "</b><br/>";
+
+		builder.setMessage(Html.fromHtml(message)).setTitle("Congratulations")
+				.setCancelable(false).setIcon(R.drawable.dialog_icon)
+				.setNegativeButton("Share", dialogClickListener)
+				.setPositiveButton("Leave", dialogClickListener).show();
 	}
 
 	class UpdateScoreOnServer extends AsyncTask<String, int[], String> {

@@ -1,8 +1,11 @@
 package org.mathematica.pro;
 
 import org.mathematica.globals.AppData;
+import org.mathematica.logic.CheckInternet;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -40,18 +43,40 @@ public class SplashScreen extends Activity {
 
 		AppData.applicationContext = this.getApplicationContext();
 
-		AppData.quicksandFont = Typeface.createFromAsset(getAssets(),
-				"fonts/qs_reg.otf");
-		AppData.joystickFont = Typeface.createFromAsset(getAssets(),
-				"fonts/joystick.ttf");
 		AppData.gameNightFont = Typeface.createFromAsset(getAssets(),
 				"fonts/game_night.ttf");
-		AppData.westernFont = Typeface.createFromAsset(getAssets(),
-				"fonts/western.otf");
 
-		Message stopSplashMessage = new Message();
-		splashHandler.sendMessageDelayed(stopSplashMessage, 3000);
+		if (!CheckInternet.isOnline()) {
+			showOfflineDialog();
+		} else {
+			Message stopSplashMessage = new Message();
+			splashHandler.sendMessageDelayed(stopSplashMessage, 2000);
+		}
 
+	}
+
+	private void showOfflineDialog() {
+		DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+				switch (which) {
+				case DialogInterface.BUTTON_POSITIVE:
+					finish();
+					break;
+				case DialogInterface.BUTTON_NEGATIVE:
+					startActivity(new Intent(
+							android.provider.Settings.ACTION_SETTINGS));
+					break;
+				}
+			}
+		};
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setMessage(
+				"Sharpening your mind requires for your device to be online.\n\nClick settings to enable a WiFi connection or enable 3G data.")
+				.setTitle("You are offline").setCancelable(false)
+				.setIcon(R.drawable.dialog_icon)
+				.setNegativeButton("Settings", dialogClickListener)
+				.setPositiveButton("Leave", dialogClickListener).show();
 	}
 
 	@Override
